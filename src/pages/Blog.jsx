@@ -172,13 +172,13 @@ export default function Blog() {
                 whileInView={{ opacity: 1, x: 0 }}
                 className="flex items-center gap-3 mb-6"
               >
-                <span className="w-12 h-[2px] bg-[#E43E1C]"></span>
+                <span className="w-12 h-[2px] bg-[#39B54A]"></span>
                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
                   Sifat kafolati
                 </span>
               </motion.div>
               <h2 className="text-5xl md:text-7xl font-black dark:text-white tracking-tighter uppercase italic">
-                XALQARO <span className="text-[#E43E1C]">YUTUQLAR</span>
+                XALQARO <span>YUTUQLAR</span>
               </h2>
             </div>
             <div className="p-6 bg-white dark:bg-zinc-900 rounded-full shadow-xl">

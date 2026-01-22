@@ -52,6 +52,26 @@ export const administration = [
     achievements: "Kadrlar mutaxassisi",
     bio: "Jamoani shakllantirish bo'yicha mas'ul.",
   },
+  {
+    id: "a5",
+    name: "Azizova Nigora",
+    role: "HR Menejer",
+    img: "https://images.unsplash.com/photo-1580894732234-83e9e3ec5997?w=800",
+    education: "WIUT",
+    experience: "10 yil",
+    achievements: "Kadrlar mutaxassisi",
+    bio: "Jamoani shakllantirish bo'yicha mas'ul.",
+  },
+  {
+    id: "a6",
+    name: "Azizova Nigora",
+    role: "HR Menejer",
+    img: "https://images.unsplash.com/photo-1580894732234-83e9e3ec5997?w=800",
+    education: "WIUT",
+    experience: "10 yil",
+    achievements: "Kadrlar mutaxassisi",
+    bio: "Jamoani shakllantirish bo'yicha mas'ul.",
+  },
 ];
 
 export const categories = [
