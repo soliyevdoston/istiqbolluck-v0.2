@@ -8,6 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
+  Legend,
 } from "recharts";
 import {
   Search,
@@ -22,18 +23,30 @@ import {
   Brain,
   CheckCircle2,
   Loader2,
-  Target,
   Trophy,
-} from "lucide-react";
+  XCircle,
+  CheckCircle,
+  X,
+} from "lucide-react"; // Yangi ikonalar qo'shildi
 import { motion, AnimatePresence } from "framer-motion";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
-// --- 1. CLEAN PLACEHOLDER DATA (7015 olib tashlandi) ---
+const COLORS = {
+  main: "#39B54A",
+  secondary: "#2E3192",
+  track: "rgba(0, 0, 0, 0.04)",
+  block1: "#2E3192",
+  block2: "#F97316",
+  sub1: "#3b82f6",
+  sub2: "#ef4444",
+  sub3: "#a855f7",
+};
+
 const DEFAULT_STUDENT = {
   name: "Dostonbek Solijonov",
   class: "Bitirgan",
-  direction: "Aniq",
+  direction: "Aniq fanlar",
   rank: "1",
   percentile: 100,
   history: [
@@ -55,20 +68,25 @@ const DEFAULT_STUDENT = {
 
 export default function DtmPremium() {
   const [searchId, setSearchId] = useState("");
-  const [currentId, setCurrentId] = useState(""); // Default bo'sh
+  const [currentId, setCurrentId] = useState("");
   const [testIndex, setTestIndex] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [studentsData, setStudentsData] = useState({});
   const reportRef = useRef(null);
 
-  const SHEET_ID = "1maHii6PdtN3aHvDOS3jMvTbQX11_bnEWOWfjyIVfyGU";
-  const SHEET_NAME = "dtms";
+  // --- TOAST STATE VA FUNKSIYASI ---
+  const [toast, setToast] = useState({ show: false, msg: "", type: "error" });
+  const notify = (msg, type = "error") => {
+    setToast({ show: true, msg, type });
+    setTimeout(() => setToast((prev) => ({ ...prev, show: false })), 4000);
+  };
 
   useEffect(() => {
     const fetchSheetsData = async () => {
       try {
-        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+        const SHEET_ID = "1maHii6PdtN3aHvDOS3jMvTbQX11_bnEWOWfjyIVfyGU";
+        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=dtms`;
         const response = await fetch(url);
         const text = await response.text();
         const json = JSON.parse(text.substring(47).slice(0, -2));
@@ -100,31 +118,31 @@ export default function DtmPremium() {
                 name: "Ona tili",
                 score: roundNum(c[11]?.v),
                 max: 10,
-                color: "#39B54A",
+                color: COLORS.main,
               },
               {
                 name: "Matematika",
                 score: roundNum(c[12]?.v),
                 max: 10,
-                color: "#39B54A",
+                color: COLORS.main,
               },
               {
                 name: "Tarix",
                 score: roundNum(c[13]?.v),
                 max: 10,
-                color: "#39B54A",
+                color: COLORS.main,
               },
               {
                 name: "1-Blok",
                 score: roundNum(c[14]?.v),
                 max: 30,
-                color: "#2E3192",
+                color: COLORS.secondary,
               },
               {
                 name: "2-Blok",
                 score: roundNum(c[15]?.v),
                 max: 30,
-                color: "#2E3192",
+                color: COLORS.secondary,
               },
             ],
           });
@@ -147,23 +165,31 @@ export default function DtmPremium() {
     [student, testIndex],
   );
 
-  const aiAnalysis = useMemo(() => {
-    if (!currentTest) return null;
-    return {
-      feedback:
-        currentTest.totalBall >= 120
-          ? "Grant uchun imkoniyat juda yuqori."
-          : "Potensialingiz yuqori, ko'proq shug'ullaning!",
-    };
-  }, [currentTest]);
+  const comparisonData = useMemo(() => {
+    return [...student.history].reverse().map((item) => ({
+      date: item.date,
+      totalBall: item.totalBall,
+      "1-Blok": item.stats.find((s) => s.name === "1-Blok")?.score || 0,
+      "2-Blok": item.stats.find((s) => s.name === "2-Blok")?.score || 0,
+      "Ona tili": item.stats.find((s) => s.name === "Ona tili")?.score || 0,
+      Matematika: item.stats.find((s) => s.name === "Matematika")?.score || 0,
+      Tarix: item.stats.find((s) => s.name === "Tarix")?.score || 0,
+    }));
+  }, [student]);
+
+  const getDynamicWidth = () => {
+    const totalEntries = comparisonData.length;
+    return totalEntries <= 4 ? "100%" : `${totalEntries * 110}px`;
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (studentsData[searchId]) {
-      setCurrentId(searchId);
+    if (studentsData[searchId.trim()]) {
+      setCurrentId(searchId.trim());
       setTestIndex(0);
+      notify("Natijalar yuklandi!", "success"); // Alert o'rniga
     } else {
-      alert("ID topilmadi!");
+      notify("ID topilmadi! Qayta tekshiring.", "error"); // Alert o'rniga
     }
   };
 
@@ -177,11 +203,7 @@ export default function DtmPremium() {
         backgroundColor: "#f0f2f5",
       });
       const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
+      const pdf = new jsPDF("p", "mm", "a4");
       const pdfWidth = pdf.internal.pageSize.getWidth();
       pdf.addImage(
         imgData,
@@ -191,229 +213,193 @@ export default function DtmPremium() {
         pdfWidth,
         (canvas.height * pdfWidth) / canvas.width,
       );
-      pdf.save(`DTM_Natija_${student.name}.pdf`);
+      pdf.save(`Result_${student.name}.pdf`);
+      notify("PDF muvaffaqiyatli saqlandi!", "success"); // Alert o'rniga
     } catch (e) {
-      alert("Xatolik!");
+      notify("Xatolik yuz berdi!", "error"); // Alert o'rniga
     } finally {
       setIsDownloading(false);
     }
   };
 
-  // --- 2. LOADING SCREEN (Y-Axis Rotation) ---
-  if (loading) {
+  if (loading)
     return (
-      <div className="fixed inset-0 z-[1000] flex flex-col items-center justify-center bg-[#f0f2f5] dark:bg-[#080808]">
+      <div className="fixed z-[100] inset-0 flex items-center justify-center bg-[#f0f2f5] dark:bg-[#080808]">
         <motion.div
           animate={{ rotateY: 360 }}
           transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          className="w-24 h-24 mb-6"
+          className="w-20 h-20"
         >
-          <img
-            src="/logo.svg"
-            alt="Logo"
-            className="w-full h-full object-contain"
-          />
+          <img src="/logo.svg" alt="Logo" className="w-full h-full" />
         </motion.div>
-        <div className="text-[#39B54A] font-black tracking-[0.3em] uppercase text-[10px] animate-pulse">
-          Ma'lumotlar yuklanmoqda...
-        </div>
       </div>
     );
-  }
 
   return (
-    <div className="min-h-screen bg-[#f0f2f5] dark:bg-[#050505] pt-22 px-3 sm:px-6 pb-4 transition-all flex flex-col overflow-x-hidden">
-      <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col h-full">
-        {/* 1. HEADER & SEARCH */}
-        <div
-          className="flex flex-col lg:flex-row justify-between items-center mb-8 gap-6"
-          data-html2canvas-ignore="true"
-        >
-          <div className="flex items-center gap-3">
-            <Zap className="text-[#39B54A] w-6 h-6" fill="#39B54A" />
-            <h1 className="text-xl font-black tracking-tighter uppercase italic dark:text-white leading-none">
-              DTM CORE
-            </h1>
-          </div>
-          <form
-            onSubmit={handleSearch}
-            className="relative w-full lg:w-96 shadow-xl rounded-2xl overflow-hidden border border-white dark:border-zinc-800"
+    <div className="bg-[#f0f2f5] dark:bg-[#050505] min-h-screen text-slate-900 dark:text-white transition-all overflow-x-hidden relative">
+      {/* --- MOBILE VA DESKTOP TOAST COMPONENT --- */}
+      <AnimatePresence>
+        {toast.show && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.9 }}
+            className={`fixed top-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-80 z-[9999] flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border backdrop-blur-md ${
+              toast.type === "success"
+                ? "bg-green-500/90 border-green-400 text-white"
+                : "bg-red-500/90 border-red-400 text-white"
+            }`}
           >
-            <input
-              type="text"
-              placeholder="ID raqamni kiriting..."
-              className="w-full py-4 px-6 bg-white/90 dark:bg-zinc-900/90 outline-none font-bold text-sm dark:text-white"
-              value={searchId}
-              onChange={(e) => setSearchId(e.target.value)}
-            />
+            {toast.type === "success" ? (
+              <CheckCircle size={22} />
+            ) : (
+              <XCircle size={22} />
+            )}
+            <span className="font-bold text-sm tracking-tight">
+              {toast.msg}
+            </span>
             <button
-              type="submit"
-              className="absolute right-1 top-1/2 -translate-y-1/2 p-2.5 bg-[#39B54A] text-black rounded-xl hover:scale-105 transition-all"
+              onClick={() => setToast((p) => ({ ...p, show: false }))}
+              className="ml-auto opacity-70 hover:opacity-100"
             >
-              <Search size={18} />
+              <X size={18} />
             </button>
-          </form>
-        </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <section className="min-h-screen flex flex-col pt-20 px-4 sm:px-10 pb-10">
+        <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col justify-center gap-6">
+          <div
+            className="flex flex-col lg:flex-row justify-between items-center gap-6"
+            data-html2canvas-ignore="true"
+          >
+            <div className="flex items-center gap-3">
+              <Zap className="text-[#39B54A] w-7 h-7" fill="#39B54A" />
+              <h1 className="text-1xl font-black uppercase italic tracking-tighter">
+                DTM <span className="text-[#39B54A]">CORE</span>
+              </h1>
+            </div>
 
-        {/* 2. DASHBOARD BODY */}
-        <div ref={reportRef} className="flex flex-col gap-6 flex-1 h-full">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-            {/* PROFILE CARD (Mobileda Searchdan keyin 1-chi chiqadi) */}
+            <div
+              className="w-full flex flex-col items-center mb-2 text-center"
+              data-html2canvas-ignore="true"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                className="bg-white/50 dark:bg-white/5 backdrop-blur-sm px-1 py-3 rounded-2xl border border-white dark:border-white/5 shadow-sm"
+              >
+                <h2 className="text-sm sm:text-lg font-black italic uppercase tracking-tight text-slate-800 dark:text-white">
+                  Ota-onalar va o'quvchilar uchun natijalarni ko'rish{" "}
+                  <span>yanada oson!</span>
+                </h2>
+                <p className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-zinc-400 mt-1">
+                  Kerakli joyga ID raqam kiriting va natijalardan qulay usulda
+                  foydalaning !
+                </p>
+              </motion.div>
+            </div>
+
+            <form
+              onSubmit={handleSearch}
+              className="relative w-full lg:w-[450px]"
+            >
+              <input
+                type="text"
+                placeholder="ID raqamni kiriting..."
+                className="w-full py-4 sm:py-5 px-8 rounded-full bg-white dark:bg-zinc-900 shadow-2xl outline-none font-bold border-2 border-transparent focus:border-[#39B54A] transition-all"
+                value={searchId}
+                onChange={(e) => setSearchId(e.target.value)}
+              />
+              <button
+                type="submit"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#39B54A] p-3 rounded-full text-black hover:scale-105 active:scale-95 transition-all shadow-lg"
+              >
+                <Search size={22} />
+              </button>
+            </form>
+          </div>
+
+          <div
+            ref={reportRef}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch w-full"
+          >
+            {/* PROFILE COLUMN */}
             <div className="order-1 lg:order-3 lg:col-span-3 flex flex-col gap-4">
-              <div className="bg-[#0f172a] dark:bg-zinc-900 text-white p-6 rounded-[2.5rem] shadow-2xl relative overflow-hidden border border-[#39B54A]/20">
+              <div className="bg-[#0f172a] dark:bg-zinc-900 text-white p-6 sm:p-8 rounded-[2.5rem] sm:rounded-[3rem] shadow-2xl relative overflow-hidden border border-[#39B54A]/20">
                 <div className="relative z-10">
-                  <div className="mb-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Hash size={16} className="text-[#39B54A]" />
-                      <span className="text-xs font-mono text-[#39B54A] font-black tracking-widest">
-                        ID: {currentId || "----"}
-                      </span>
-                    </div>
-                    {/*break-words ism siqishi uchun*/}
-                    <h2 className="text-2xl sm:text-3xl font-black uppercase italic leading-[1.1] break-words">
-                      {student.name}
-                    </h2>
-                  </div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-lg mb-6 border border-white/5">
-                    <Trophy size={14} className="text-[#39B54A]" />
-                    <p className="text-[10px] font-black uppercase tracking-widest text-[#39B54A]">
-                      {student.direction}
-                    </p>
-                  </div>
-                  <div className="space-y-3 pt-6 border-t border-white/10">
-                    <InfoRow icon={<School size={16} />} text={student.class} />
+                  <p className="text-[#39B54A] font-mono font-black text-[10px] mb-2 uppercase tracking-widest">
+                    ID: {currentId || "----"}
+                  </p>
+                  <h2 className="text-2xl sm:text-3xl font-black uppercase italic leading-tight mb-6 break-words">
+                    {student.name}
+                  </h2>
+                  <div className="space-y-4 pt-6 border-t border-white/10">
                     <InfoRow
-                      icon={<Award size={16} />}
+                      icon={<Trophy size={18} className="text-[#39B54A]" />}
+                      text={student.direction}
+                    />
+                    <InfoRow
+                      icon={<School size={18} className="text-slate-400" />}
+                      text={student.class}
+                    />
+                    <InfoRow
+                      icon={<Award size={18} className="text-slate-400" />}
                       text={`${currentTest.cert} ta yutuq`}
                     />
                   </div>
                 </div>
-                <div className="absolute -bottom-6 -right-6 text-9xl font-black text-white/5 italic select-none">
-                  ID
-                </div>
               </div>
-
-              {/* AI ANALYSIS BOX (PCda Profilning tagida) */}
-              <div className="hidden lg:block bg-white dark:bg-zinc-900 p-6 rounded-[2.5rem] shadow-xl border dark:border-zinc-800">
-                <div className="flex items-center gap-2 mb-4">
-                  <Brain size={20} className="text-purple-500" />
-                  <h4 className="text-xs font-black uppercase dark:text-white">
-                    AI Tavsiya
-                  </h4>
-                </div>
-                <p className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium italic leading-relaxed mb-6">
-                  "{aiAnalysis?.feedback}"
-                </p>
-                <button
-                  onClick={downloadPDF}
-                  disabled={!currentId || isDownloading}
-                  className="w-full py-4 bg-black dark:bg-[#39B54A] text-white dark:text-black rounded-2xl font-black flex items-center justify-center gap-2 transition-all text-xs active:scale-95 shadow-lg disabled:opacity-30"
-                >
-                  {isDownloading ? (
-                    <Loader2 className="animate-spin" size={16} />
-                  ) : (
-                    <>
-                      <Download size={16} /> PDF YUKLASH
-                    </>
-                  )}
-                </button>
-              </div>
+              <button
+                onClick={downloadPDF}
+                disabled={!currentId || isDownloading}
+                className="w-full py-4 bg-[#39B54A] hover:bg-[#2e9e3e] text-black rounded-[2rem] font-black text-xs sm:text-sm active:scale-95 shadow-xl transition-all disabled:opacity-30"
+              >
+                {isDownloading ? (
+                  <Loader2 className="animate-spin mx-auto" size={20} />
+                ) : (
+                  "NATIJANI PDF YUKLASH"
+                )}
+              </button>
             </div>
 
-            {/* STATS LEFT SIDEBAR (Mobileda 2-chi chiqadi) */}
-            <div className="order-2 lg:order-1 lg:col-span-3 flex flex-col gap-4">
-              <StatCard
-                icon={<TrendingUp size={20} className="text-blue-500" />}
-                label="Reyting"
-                value={student.rank}
-                sub="Umumiy o'rni"
-                color="blue"
-              />
-              <StatCard
-                icon={<Zap size={20} className="text-yellow-500" />}
-                label="Percentile"
-                value={`${student.percentile}%`}
-                sub="O'sish dinamikasi"
-                color="yellow"
-              />
-              <StatCard
-                icon={<Brain size={20} className="text-purple-500" />}
-                label="Analiz"
-                value="Ijobiy"
-                sub="AI xulosasi"
-                color="purple"
-              />
-              <StatCard
-                icon={<CheckCircle2 size={20} className="text-[#39B54A]" />}
-                label="Grant"
-                value={`${currentTest.grantChance}%`}
-                sub="O'qishga kirish"
-                color="green"
-              />
-
-              <div className="hidden lg:block p-6 rounded-[2rem] bg-[#39B54A]/5 border-2 border-dashed border-[#39B54A]/20 mt-auto">
-                <p className="text-[10px] font-black uppercase text-[#39B54A] mb-2 flex items-center gap-2">
-                  <Target size={14} /> Maqsad
-                </p>
-                <p className="text-xs font-bold text-slate-400 italic leading-relaxed">
-                  Hozirgi natijangiz bilan siz davlat granti asosida qabul
-                  qilinish imkoniyatiga egasiz.
-                </p>
-              </div>
-            </div>
-
-            {/* CHART CENTER (Mobileda 3-chi chiqadi) */}
-            <div className="order-3 lg:order-2 lg:col-span-6">
-              <div className="bg-white dark:bg-zinc-900 p-6 rounded-[2.5rem] shadow-2xl border border-white dark:border-zinc-800 h-full flex flex-col">
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <h3 className="text-lg font-black italic flex items-center gap-2 uppercase dark:text-white">
-                      <Calendar size={18} className="text-[#39B54A]" />{" "}
+            {/* MAIN CHART COLUMN */}
+            <div className="order-2 lg:order-2 lg:col-span-6">
+              <div className="bg-white dark:bg-zinc-900 p-6 sm:p-8 rounded-[2.5rem] sm:rounded-[3rem] shadow-2xl border dark:border-zinc-800 h-full flex flex-col">
+                <div className="flex justify-between items-start mb-8 sm:mb-10">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 sm:p-3 bg-slate-100 dark:bg-zinc-800 rounded-2xl">
+                      <Calendar size={18} className="text-[#39B54A]" />
+                    </div>
+                    <h3 className="text-lg sm:text-xl font-black italic uppercase">
                       {currentTest.date}
                     </h3>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                      O'zlashtirish tahlili
-                    </p>
                   </div>
-                  <div className="bg-[#39B54A]/10 px-4 py-2 rounded-xl text-center border border-[#39B54A]/20 shadow-inner">
-                    <p className="text-[8px] text-slate-500 font-black uppercase tracking-tighter">
+                  <div className="text-right">
+                    <p className="text-[8px] sm:text-[10px] font-black uppercase text-slate-400 tracking-widest">
                       Jami Ball
                     </p>
-                    <p className="text-3xl font-black text-[#39B54A]">
+                    <p className="text-3xl sm:text-5xl font-black text-[#39B54A] leading-none">
                       {currentTest.totalBall}
                     </p>
                   </div>
                 </div>
-
-                <div className="flex-1 min-h-[300px] w-full">
+                <div className="flex-1 min-h-[280px] sm:min-h-[350px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={currentTest.stats}>
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        vertical={false}
-                        opacity={0.05}
-                      />
+                      <CartesianGrid vertical={false} opacity={0.05} />
                       <XAxis
                         dataKey="name"
-                        axisLine={false}
-                        tickLine={false}
                         tick={{
                           fill: "#64748b",
                           fontSize: 10,
                           fontWeight: 700,
                         }}
+                        axisLine={false}
+                        tickLine={false}
                       />
                       <YAxis hide domain={[0, 32]} />
-                      <Tooltip
-                        cursor={{ fill: "rgba(57, 181, 74, 0.05)" }}
-                        contentStyle={{
-                          borderRadius: "12px",
-                          border: "none",
-                          backgroundColor: "#000",
-                          color: "#fff",
-                        }}
-                      />
-                      <Bar dataKey="score" radius={[8, 8, 0, 0]} barSize={40}>
+                      <Bar dataKey="score" radius={[12, 12, 0, 0]} barSize={45}>
                         {currentTest.stats.map((entry, index) => (
                           <Cell key={index} fill={entry.color} />
                         ))}
@@ -421,89 +407,280 @@ export default function DtmPremium() {
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mt-6">
-                  {currentTest.stats.map((item, i) => (
-                    <div
-                      key={i}
-                      className="p-3 rounded-2xl bg-slate-50/50 dark:bg-zinc-800/40 border dark:border-zinc-800 text-center shadow-sm"
-                    >
-                      <p className="text-[8px] text-slate-400 font-black uppercase mb-1 truncate px-1">
-                        {item.name}
-                      </p>
-                      <p className="text-lg font-black dark:text-white leading-none">
-                        {item.score}
-                        <span className="text-[10px] text-slate-400">
-                          /{item.max}
-                        </span>
-                      </p>
-                    </div>
-                  ))}
-                </div>
               </div>
+            </div>
+
+            {/* STATS COLUMN */}
+            <div className="order-3 lg:order-1 lg:col-span-3 grid grid-cols-2 lg:flex lg:flex-col gap-3 sm:gap-4">
+              <StatCard
+                icon={<TrendingUp size={22} className="text-blue-500" />}
+                label="Reyting"
+                value={student.rank}
+                color="blue"
+              />
+              <StatCard
+                icon={<CheckCircle2 size={22} className="text-[#39B54A]" />}
+                label="Grant"
+                value={`${currentTest.grantChance}%`}
+                color="green"
+              />
+              <StatCard
+                icon={<Zap size={22} className="text-yellow-500" />}
+                label="Percentile"
+                value={`${student.percentile}%`}
+                color="yellow"
+              />
+              <StatCard
+                icon={<Brain size={22} className="text-purple-500" />}
+                label="Analiz"
+                value="Ijobiy"
+                color="purple"
+              />
             </div>
           </div>
 
-          {/* 3. HISTORY FOOTER (W-100% va Eng pastda) */}
           {student.history.length > 1 && (
             <div
-              className="w-full mt-auto p-6 bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-white dark:border-zinc-800 shadow-xl"
+              className="w-full overflow-x-auto hide-scrollbar"
               data-html2canvas-ignore="true"
             >
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <History size={16} /> Imtihonlar tarixi
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {student.history.map((t, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setTestIndex(i)}
-                      className={`px-5 py-2.5 rounded-xl font-black text-[11px] transition-all border-2 ${testIndex === i ? "bg-[#39B54A] border-[#39B54A] text-black shadow-lg" : "bg-white dark:bg-zinc-800 text-slate-400 border-transparent hover:border-slate-200"}`}
-                    >
-                      {t.date}
-                    </button>
-                  ))}
-                </div>
+              <div className="flex items-center gap-3 min-w-max py-2">
+                <History size={18} className="text-slate-400 mr-2" />
+                {student.history.map((t, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setTestIndex(i)}
+                    className={`px-6 sm:px-8 py-2.5 sm:py-3 rounded-2xl font-black text-[10px] sm:text-xs border-2 transition-all ${testIndex === i ? "bg-[#39B54A] border-[#39B54A] text-black shadow-lg" : "bg-white dark:bg-zinc-800 text-slate-400 border-transparent"}`}
+                  >
+                    {t.date}
+                  </button>
+                ))}
               </div>
             </div>
           )}
         </div>
-      </div>
-
+      </section>
+      <hr />
+      {/* DYNAMIKA SECTION */}
+      {comparisonData.length > 1 && (
+        <div className="max-w-7xl mx-auto w-full px-6 py-24 flex flex-col gap-24 border-t dark:border-zinc-800">
+          <div className="text-center space-y-4">
+            <h2 className="text-4xl sm:text-5xl font-black uppercase italic tracking-tighter">
+              Imtihonlar <span className="text-[#39B54A]">dinamikasi</span>
+            </h2>
+            <p className="text-slate-400 font-bold uppercase tracking-[0.3em] text-[10px]">
+              Barcha natijalarning qiyosiy tahlili
+            </p>
+          </div>
+          <hr />
+          {/* Jami Ball Dinamikasi */}
+          <div className="space-y-10">
+            <div className="flex items-center gap-4">
+              <div className="w-1.5 h-10 bg-[#39B54A] rounded-full" />
+              <h3 className="text-xl font-black uppercase italic">
+                To'plangan jami ballar
+              </h3>
+            </div>
+            <div className="w-full overflow-x-auto hide-scrollbar">
+              <div style={{ width: getDynamicWidth(), minWidth: "100%" }}>
+                <div className="h-[400px] sm:h-[450px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={comparisonData}>
+                      <CartesianGrid
+                        vertical={false}
+                        strokeDasharray="3 3"
+                        opacity={0.05}
+                      />
+                      <XAxis
+                        dataKey="date"
+                        tick={{ fontSize: 10, fontWeight: 800, fill: "#888" }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <Tooltip
+                        cursor={{ fill: "transparent" }}
+                        contentStyle={{
+                          borderRadius: "20px",
+                          border: "none",
+                          backgroundColor: "#000",
+                          color: "#fff",
+                        }}
+                      />
+                      <Bar
+                        dataKey="totalBall"
+                        fill={COLORS.sub1}
+                        radius={[15, 15, 0, 0]}
+                        barSize={50}
+                        label={{
+                          position: "top",
+                          fill: COLORS.main,
+                          fontWeight: 900,
+                          fontSize: 14,
+                        }}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr />
+          {/* Bloklar Dinamikasi */}
+          <div className="space-y-10">
+            <div className="flex items-center gap-4">
+              <div className="w-1.5 h-10 bg-[#2E3192] rounded-full" />
+              <h3 className="text-xl font-black uppercase italic">
+                Mutaxassislik fanlari (1-2 Bloklar)
+              </h3>
+            </div>
+            <div className="w-full overflow-x-auto hide-scrollbar">
+              <div style={{ width: getDynamicWidth(), minWidth: "100%" }}>
+                <div className="h-[400px] sm:h-[450px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={comparisonData} barGap={10}>
+                      <CartesianGrid
+                        vertical={false}
+                        strokeDasharray="3 3"
+                        opacity={0.05}
+                      />
+                      <XAxis
+                        dataKey="date"
+                        tick={{ fontSize: 10, fontWeight: 800, fill: "#888" }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <Legend
+                        verticalAlign="top"
+                        iconType="circle"
+                        wrapperStyle={{
+                          paddingBottom: "40px",
+                          fontWeight: 900,
+                          textTransform: "uppercase",
+                          fontSize: "10px",
+                        }}
+                      />
+                      <Bar
+                        dataKey="1-Blok"
+                        fill={COLORS.block1}
+                        radius={[10, 10, 0, 0]}
+                        barSize={35}
+                        label={{
+                          position: "top",
+                          fontSize: 11,
+                          fontWeight: 800,
+                        }}
+                      />
+                      <Bar
+                        dataKey="2-Blok"
+                        fill={COLORS.block2}
+                        radius={[10, 10, 0, 0]}
+                        barSize={35}
+                        label={{
+                          position: "top",
+                          fontSize: 11,
+                          fontWeight: 800,
+                        }}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr />
+          {/* Majburiy Fanlar Dinamikasi */}
+          <div className="space-y-10">
+            <div className="flex items-center gap-4">
+              <div className="w-1.5 h-10 bg-[#F97316] rounded-full" />
+              <h3 className="text-xl font-black uppercase italic">
+                Majburiy fanlar tahlili
+              </h3>
+            </div>
+            <div className="w-full overflow-x-auto hide-scrollbar">
+              <div style={{ width: getDynamicWidth(), minWidth: "100%" }}>
+                <div className="h-[400px] sm:h-[450px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={comparisonData} barGap={5}>
+                      <CartesianGrid
+                        vertical={false}
+                        strokeDasharray="3 3"
+                        opacity={0.05}
+                      />
+                      <XAxis
+                        dataKey="date"
+                        tick={{ fontSize: 10, fontWeight: 800, fill: "#888" }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <Legend
+                        verticalAlign="top"
+                        iconType="circle"
+                        wrapperStyle={{
+                          paddingBottom: "40px",
+                          fontWeight: 900,
+                          textTransform: "uppercase",
+                          fontSize: "10px",
+                        }}
+                      />
+                      <Bar
+                        dataKey="Ona tili"
+                        fill={COLORS.sub1}
+                        radius={[8, 8, 0, 0]}
+                        barSize={20}
+                      />
+                      <Bar
+                        dataKey="Matematika"
+                        fill={COLORS.sub2}
+                        radius={[8, 8, 0, 0]}
+                        barSize={20}
+                      />
+                      <Bar
+                        dataKey="Tarix"
+                        fill={COLORS.sub3}
+                        radius={[8, 8, 0, 0]}
+                        barSize={20}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      <hr />
+      <footer className="py-20 text-center opacity-10 text-[10px] font-black uppercase tracking-[1em] select-none">
+        Istiqbolluck.uz v0.2
+      </footer>
       <style
         dangerouslySetInnerHTML={{
-          __html: `.hide-scrollbar::-webkit-scrollbar { display: none; }`,
+          __html: `.hide-scrollbar::-webkit-scrollbar { display: none; } .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }`,
         }}
       />
     </div>
   );
 }
 
-// --- SUB-COMPONENTS ---
-function StatCard({ icon, label, value, sub, color }) {
+function StatCard({ icon, label, value, color }) {
   const themes = {
-    blue: "border-blue-500/20 bg-blue-500/5",
-    yellow: "border-yellow-500/20 bg-yellow-500/5",
-    purple: "border-purple-500/20 bg-purple-500/5",
-    green: "border-[#39B54A]/20 bg-[#39B54A]/5",
+    blue: "border-blue-500/10 bg-blue-500/5",
+    yellow: "border-yellow-500/10 bg-yellow-500/5",
+    purple: "border-purple-500/10 bg-purple-500/5",
+    green: "border-[#39B54A]/10 bg-[#39B54A]/5",
   };
   return (
     <div
-      className={`p-5 rounded-2xl border-2 ${themes[color]} flex items-center gap-5 transition-all hover:translate-x-1 bg-white dark:bg-zinc-900 shadow-sm`}
+      className={`p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border ${themes[color]} flex items-center gap-3 sm:gap-5 bg-white dark:bg-zinc-900 shadow-xl transition-transform hover:scale-[1.02]`}
     >
-      <div className="p-3 bg-white dark:bg-zinc-800 rounded-xl shadow-md border dark:border-zinc-700">
-        {icon}
+      <div className="p-2 sm:p-4 bg-white dark:bg-zinc-800 rounded-xl sm:rounded-2xl shadow-md border dark:border-zinc-700">
+        {React.cloneElement(icon, { size: 20 })}
       </div>
-      <div className="min-w-0">
-        <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">
+      <div>
+        <p className="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">
           {label}
         </p>
-        <p className="text-xl font-black dark:text-white leading-none my-0.5">
+        <p className="text-lg sm:text-2xl font-black dark:text-white leading-none mt-1">
           {value}
-        </p>
-        <p className="text-[7px] font-bold text-slate-400 italic truncate">
-          {sub}
         </p>
       </div>
     </div>
@@ -512,11 +689,13 @@ function StatCard({ icon, label, value, sub, color }) {
 
 function InfoRow({ icon, text }) {
   return (
-    <div className="flex items-center gap-3 text-white/70">
-      <div className="p-1.5 bg-white/5 rounded-lg border border-white/5">
+    <div className="flex items-center gap-4 text-white/80">
+      <div className="p-2 bg-white/5 rounded-xl border border-white/5">
         {icon}
       </div>
-      <span className="font-bold text-[11px] tracking-tight">{text}</span>
+      <span className="font-bold text-xs sm:text-sm tracking-tight">
+        {text}
+      </span>
     </div>
   );
 }

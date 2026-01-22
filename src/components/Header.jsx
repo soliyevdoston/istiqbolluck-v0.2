@@ -48,7 +48,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="fixed top-0 w-full z-[100] h-14 md:h-16 flex items-center justify-between px-4 md:px-10 bg-white/90 dark:bg-black/90 backdrop-blur-md border-b border-gray-100 dark:border-zinc-900 transition-all">
+      <header className="fixed top-0 w-full z-[101] h-14 md:h-16 flex items-center justify-between px-4 md:px-10 bg-white/90 dark:bg-black/90 backdrop-blur-md border-b border-gray-100 dark:border-zinc-900 transition-all">
         {/* --- LOGO --- */}
         <Link to="/" className="flex items-center gap-2 shrink-0 group">
           <img
