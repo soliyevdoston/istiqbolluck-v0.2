@@ -27,6 +27,8 @@ import {
   LayoutDashboard,
   User,
   ChevronDown,
+  Bell,
+  Star,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -39,7 +41,6 @@ const COLORS = {
   sub1: "#3b82f6",
   sub2: "#ef4444",
   sub3: "#a855f7",
-  emptySlot: "rgba(148, 163, 184, 0.15)",
 };
 
 const MAX_SCORES_MAP = {
@@ -51,7 +52,7 @@ const MAX_SCORES_MAP = {
   totalBall: 189,
 };
 
-// --- 2. DEFAULT MA'LUMOT (SAHIFA OCHILGANDA) ---
+// --- 2. ILK BOR SAHIFA OCHILGANDA KO'RINADIGAN DEFAULT MA'LUMOT ---
 const DEFAULT_STUDENT = {
   name: "Dostonbek Solijonov",
   class: "Bitirgan",
@@ -81,10 +82,18 @@ export default function Dtm() {
   const [testIndex, setTestIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [studentsData, setStudentsData] = useState({});
+  const [isOpen, setIsOpen] = useState(false);
+  const [toast, setToast] = useState({ show: false, msg: "", type: "success" });
+
   const navigate = useNavigate();
   const location = useLocation();
-  const [toast, setToast] = useState({ show: false, msg: "", type: "error" });
-  const [isOpen, setIsOpen] = useState(false); // Sanalar menyusi ochiq/yopiqligi
+
+  // Toast xabarini chiqarish funksiyasi
+  const notify = (msg, type = "success") => {
+    setToast({ show: true, msg, type });
+    setTimeout(() => setToast({ ...toast, show: false }), 3000);
+  };
+
   // --- 3. MA'LUMOTLARNI YUKLASH VA TARTIBLASH ---
   useEffect(() => {
     const fetchSheetsData = async () => {
@@ -142,8 +151,6 @@ export default function Dtm() {
             ],
           });
         });
-
-        // Tarixni teskari tartiblash (Eng yangisi birinchi)
         Object.keys(formatted).forEach((key) => {
           formatted[key].history.reverse();
         });
@@ -195,15 +202,14 @@ export default function Dtm() {
     const cleanId = searchId.trim();
     if (studentsData[cleanId]) {
       setCurrentId(cleanId);
-      setTestIndex(0); // Qidirganda avtomatik eng yangi natija
-      setToast({ show: true, msg: "Natija yuklandi!", type: "success" });
+      setTestIndex(0);
+      notify("Natijalar muvaffaqiyatli yangilandi!", "success");
     } else {
-      setToast({ show: true, msg: "ID topilmadi!", type: "error" });
+      notify("Bunday ID raqamli o'quvchi topilmadi!", "error");
     }
-    setTimeout(() => setToast({ show: false, msg: "", type: "error" }), 3000);
   };
 
-  // --- 4. YUKLANISH HOLATI (LOGO ANIMATSIYASI) ---
+  // --- 4. YUKLANISH ANIMATSIYASI ---
   if (loading)
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-[#f0f2f5] dark:bg-[#080808] z-[100]">
@@ -218,22 +224,45 @@ export default function Dtm() {
     );
 
   return (
-    <div className="bg-[#f0f2f5] dark:bg-[#080808] min-h-screen text-slate-900 dark:text-white font-sans overflow-x-hidden pt-20">
-      {/* --- 5. HEADER (MOBIL VA DESKTOP) --- */}
-      <header className="px-4 md:px-10 max-w-[1440px] mx-auto flex items-center justify-between mb-10">
-        <div className="flex items-center gap-3">
-          <div className="bg-[#39B54A] p-2 rounded-xl shadow-lg">
+    <div className="bg-[#f0f2f5] dark:bg-[#050505] min-h-screen text-slate-900 dark:text-white font-sans overflow-x-hidden pt-8 md:pt-16 transition-all">
+      {/* --- TOAST BILDIRISHNOMA --- */}
+      <AnimatePresence>
+        {toast.show && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, x: "-50%" }}
+            animate={{ opacity: 1, y: 20, x: "-50%" }}
+            exit={{ opacity: 0, y: -50, x: "-50%" }}
+            className={`fixed top-0 left-1/2 z-[1000] px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 font-bold text-sm backdrop-blur-md border ${
+              toast.type === "success"
+                ? "bg-green-500/90 border-green-400 text-white"
+                : "bg-red-500/90 border-red-400 text-white"
+            }`}
+          >
+            {toast.type === "success" ? (
+              <CheckCircle size={18} />
+            ) : (
+              <XCircle size={18} />
+            )}
+            {toast.msg}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* --- 5. HEADER --- */}
+      <header className="px-4 md:px-10 max-w-[1440px] mx-auto flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <div className="bg-[#39B54A] p-2.5 rounded-2xl shadow-xl shadow-[#39B54A]/20">
             <Zap className="text-white" size={24} fill="white" />
           </div>
           <div className="flex flex-col">
-            <h1 className="text-xl font-black uppercase tracking-tighter italic leading-none">
+            <h1 className="text-xl md:text-2xl font-black uppercase tracking-tighter italic leading-none">
               IstiqbolLuck <span className="text-[#39B54A]">DTM</span>
             </h1>
             <p className="text-[9px] md:text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-widest mt-1 leading-relaxed">
-              Ota-onalar va o'quvchilar uchun natijalarni kuzatish endi yanada{" "}
-              osonroq.
-              <br className="hidden md:block" />
-              ID raqamni kiriting va ko'rsatkichlar bilan tanishing.
+              Natijalarni kuzatish endi yanada{" "}
+              <span className="text-[#39B54A]">osonroq</span>.{" "}
+              <br className="hidden md:block" /> ID raqamni kiriting va
+              natijalar bilan tanishing.
             </p>
           </div>
         </div>
@@ -244,26 +273,26 @@ export default function Dtm() {
           <input
             value={searchId}
             onChange={(e) => setSearchId(e.target.value)}
-            placeholder="ID raqam..."
-            className="w-full bg-white dark:bg-zinc-900 border-2 border-[#39B54A]/20 focus:border-[#39B54A] rounded-xl py-2 px-4 text-xs font-bold outline-none shadow-sm transition-all"
+            placeholder="O'quvchi ID..."
+            className="w-full bg-white dark:bg-zinc-900 border-2 border-[#39B54A]/20 focus:border-[#39B54A] rounded-xl py-3 px-5 text-xs font-bold outline-none shadow-sm transition-all"
           />
           <button
             type="submit"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#39B54A]"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#39B54A] hover:scale-110 transition-all"
           >
             <Search size={18} />
           </button>
         </form>
       </header>
 
-      {/* --- 6. MOBIL QIDIRUV --- */}
+      {/* MOBIL QIDIRUV */}
       <div className="px-4 md:px-10 max-w-[1440px] mx-auto mb-6 md:hidden">
         <form onSubmit={handleSearch} className="relative w-full">
           <input
             value={searchId}
             onChange={(e) => setSearchId(e.target.value)}
-            placeholder="ID kiritib izlang..."
-            className="w-full bg-white dark:bg-zinc-900 border-2 border-[#39B54A]/30 focus:border-[#39B54A] shadow-xl rounded-2xl py-4 px-6 text-sm font-bold outline-none transition-all"
+            placeholder="O'quvchi ID raqami..."
+            className="w-full bg-white dark:bg-zinc-900 border-2 border-[#39B54A]/30 focus:border-[#39B54A] shadow-xl rounded-2xl py-4 px-6 text-sm font-bold outline-none"
           />
           <button
             type="submit"
@@ -274,77 +303,90 @@ export default function Dtm() {
         </form>
       </div>
 
-      <main className="max-w-[1440px] mx-auto px-4 md:px-10 pb-12 flex flex-col gap-6">
-        {/* --- 7. ASOSIY DASHBOARD (SIDEBAR + DIAGRAMMA) --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* SIDEBAR: ISMAT-FAMILIYA VA PROFIL */}
-          <div className="lg:col-span-4 flex flex-col gap-6 order-1">
-            <div className="bg-[#0f172a] text-white p-7 rounded-[2.5rem] shadow-2xl relative overflow-hidden border-b-8 border-[#39B54A]">
-              <div className="relative z-10">
-                <span className="text-[10px] font-black bg-[#39B54A] text-black px-2.5 py-1 rounded uppercase tracking-tighter">
-                  ID: {currentId || "----"}
-                </span>
-                <h2 className="text-2xl font-black italic uppercase leading-tight mt-5 mb-8">
+      <main className="max-w-[1440px] mx-auto px-4 md:px-10 pb-12">
+        {/* --- 6. HERO SECTION (H-SCREEN) --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch lg:h-[calc(100vh-160px)] min-h-[600px]">
+          {/* SIDEBAR: YANGILANGAN ISM-FAMILIYA VA KARTALAR */}
+          <div className="lg:col-span-4 flex flex-col gap-4 order-1">
+            {/* O'quvchi kartasi (Boyitilgan dizayn) */}
+            <div className="bg-[#0f172a] text-white p-6 md:p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden border-b-8 border-[#39B54A] flex-1 flex flex-col justify-center items-center text-center">
+              <div className="relative z-10 w-full">
+                {/* Avatar qismi */}
+                <div className="w-20 h-20 bg-gradient-to-br from-[#39B54A] to-emerald-700 rounded-full mx-auto mb-4 flex items-center justify-center shadow-2xl border-4 border-white/10 ring-4 ring-[#39B54A]/20">
+                  <span className="text-2xl font-black">
+                    {student.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </span>
+                </div>
+                <div className="inline-flex items-center gap-2 bg-white/5 px-3 py-1 rounded-full border border-white/10 mb-4">
+                  <span className="w-2 h-2 bg-[#39B54A] rounded-full animate-pulse"></span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">
+                    Holati: Faol
+                  </span>
+                </div>
+                <h2 className="text-2xl md:text-3xl font-black italic uppercase leading-tight mb-6">
                   {student.name}
                 </h2>
-                <div className="space-y-4 pt-6 border-t border-white/5">
+
+                <div className="grid grid-cols-1 gap-3 text-left bg-white/5 p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
                   <InfoLine
-                    icon={<Trophy size={16} />}
+                    icon={<Trophy size={14} className="text-[#39B54A]" />}
                     label="Yo'nalish"
                     value={student.direction}
                   />
                   <InfoLine
-                    icon={<School size={16} />}
+                    icon={<School size={14} className="text-blue-400" />}
                     label="Sinf"
                     value={student.class}
                   />
                   <InfoLine
-                    icon={<Award size={16} />}
+                    icon={<Star size={14} className="text-yellow-400" />}
                     label="Yutuqlar"
                     value={`${currentTest.cert} ta`}
                   />
                 </div>
               </div>
               <LayoutDashboard
-                className="absolute -bottom-6 -right-6 text-white/5"
-                size={120}
+                className="absolute -bottom-10 -right-10 text-white/5"
+                size={180}
               />
             </div>
 
-            {/* DESKTOP UCHUN STATISTIKA KARTALARI */}
-            <div className="hidden lg:grid grid-cols-2 gap-4">
+            {/* Desktop Statistika (2x2) */}
+            <div className="hidden lg:grid grid-cols-2 gap-3 h-[30%]">
               <StatSquare
-                icon={<TrendingUp size={18} />}
+                icon={<TrendingUp size={16} />}
                 label="Reyting"
                 value={student.rank}
                 color="text-blue-500"
               />
               <StatSquare
-                icon={<CheckCircle2 size={18} />}
+                icon={<CheckCircle2 size={16} />}
                 label="Grant"
                 value={`${currentTest.grantChance}%`}
                 color="text-[#39B54A]"
               />
               <StatSquare
-                icon={<Zap size={18} />}
+                icon={<Zap size={16} />}
                 label="Percent"
                 value={`${student.percentile}%`}
                 color="text-orange-500"
               />
               <StatSquare
-                icon={<Brain size={18} />}
+                icon={<Brain size={16} />}
                 label="Analiz"
-                value="Ijobiy"
+                value="Ok"
                 color="text-purple-500"
               />
             </div>
           </div>
 
-          {/* DIAGRAMMA VA BOSHQARUV PANEL */}
-          <div className="lg:col-span-8 flex flex-col gap-6 order-2">
-            {/* SANA TANLASH VA NAVIGATSIYA */}
+          {/* DIAGRAMMA QISMI */}
+          <div className="lg:col-span-8 flex flex-col gap-4 order-2">
             <div className="bg-white dark:bg-zinc-900 p-3 md:p-4 rounded-[1.5rem] shadow-xl border border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl w-full md:w-auto overflow-x-auto hide-scrollbar">
+              <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1.5 rounded-xl w-full md:w-auto">
                 <NavBtn
                   active={location.pathname === "/dtm"}
                   icon={<User size={13} />}
@@ -358,94 +400,74 @@ export default function Dtm() {
                   onClick={() => navigate("/schooldtm")}
                 />
               </div>
-              {/* --- SANA TANLASH (CUSTOM ANIMATED DROPDOWN) --- */}
-              <div className="relative w-full md:w-60">
-                {/* Tanlash tugmasi */}
+
+              <div className="relative w-full md:w-56">
                 <button
                   onClick={() => setIsOpen(!isOpen)}
-                  className="w-full bg-zinc-50 dark:bg-zinc-800 rounded-xl py-2.5 px-4 text-[10px] font-black uppercase flex items-center justify-between border-1  border-[#82ce8c] transition-all duration-300 shadow-sm"
+                  className="w-full bg-zinc-50 dark:bg-zinc-800 rounded-xl py-2.5 px-4 text-[10px] font-black uppercase flex items-center justify-between border-2 border-transparent hover:border-[#39B54A] transition-all"
                 >
                   <span>
-                    {student.history[testIndex]?.date}{" "}
-                    {testIndex === 0 ? "(eng oxirgi)" : ""}
+                    {currentTest.date} {testIndex === 0 ? "(eng yangi)" : ""}
                   </span>
                   <motion.div
                     animate={{ rotate: isOpen ? 180 : 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <ChevronDown className="text-slate-400" size={14} />
+                    <ChevronDown size={14} />
                   </motion.div>
                 </button>
-
-                {/* Slide bo'lib ochiladigan menyu */}
                 <AnimatePresence>
                   {isOpen && (
-                    <>
-                      {/* Menyudan tashqarini bossa yopilishi uchun fon qatlami */}
-                      <div
-                        className="fixed inset-0 z-40"
-                        onClick={() => setIsOpen(false)}
-                      />
-
-                      <motion.div
-                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 5, scale: 1 }}
-                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute left-0 right-0 top-full z-50 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl shadow-2xl overflow-hidden py-2"
-                      >
-                        <div className="max-h-60 overflow-y-auto hide-scrollbar">
-                          {student.history.map((h, i) => (
-                            <button
-                              key={i}
-                              onClick={() => {
-                                setTestIndex(i);
-                                setIsOpen(false);
-                              }}
-                              className={`w-full text-left px-5 py-3 text-[10px] font-black uppercase transition-all flex items-center justify-between
-                  ${
-                    testIndex === i
-                      ? "bg-[#39B54A]/10 text-[#39B54A]"
-                      : "text-slate-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                  }`}
-                            >
-                              <span>{h.date}</span>
-                              {i === 0 && (
-                                <span className="text-[8px] border-[#82ce8c] text-black px-1.5 py-0.5 rounded ml-2">
-                                  Yangi
-                                </span>
-                              )}
-                              {testIndex === i && <CheckCircle size={12} />}
-                            </button>
-                          ))}
-                        </div>
-                      </motion.div>
-                    </>
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 5 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute left-0 right-0 top-full z-50 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl shadow-2xl overflow-hidden py-1 mt-1"
+                    >
+                      <div className="max-h-48 overflow-y-auto hide-scrollbar">
+                        {student.history.map((h, i) => (
+                          <button
+                            key={i}
+                            onClick={() => {
+                              setTestIndex(i);
+                              setIsOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2.5 text-[10px] font-black uppercase flex items-center justify-between transition-all ${testIndex === i ? "bg-[#39B54A]/10 text-[#39B54A]" : "hover:bg-zinc-100 dark:hover:bg-zinc-800"}`}
+                          >
+                            <span>{h.date}</span>{" "}
+                            {i === 0 && (
+                              <span className="text-[7px] border-[#82ce8c] border text-black px-1 rounded">
+                                Yangi
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
                   )}
                 </AnimatePresence>
               </div>
             </div>
 
-            {/* ASOSIY DIAGRAMMA CARD */}
-            <div className="bg-white dark:bg-zinc-900 p-6 md:p-8 rounded-[2.5rem] shadow-xl border border-zinc-200 dark:border-zinc-800 flex-1">
-              <div className="flex justify-between items-center mb-10">
+            <div className="bg-white dark:bg-zinc-900 p-6 md:p-8 rounded-[2.5rem] shadow-xl border border-zinc-200 dark:border-zinc-800 flex-1 flex flex-col">
+              <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg md:text-xl font-black uppercase italic tracking-tighter leading-none">
                   Imtihon <span className="text-[#39B54A]">Tahlili</span>
                 </h3>
                 <div className="bg-[#39B54A] px-4 py-2 rounded-xl text-black shadow-md text-center">
                   <p className="text-[7px] font-black uppercase mb-0.5 opacity-60">
-                    JAMI BALL
+                    Jami
                   </p>
-                  <p className="text-xl md:text-2xl font-black leading-none">
+                  <p className="text-xl font-black leading-none">
                     {currentTest.totalBall}
                   </p>
                 </div>
               </div>
-              <div className="h-[300px] md:h-[380px] w-full">
+              <div className="flex-1 w-full min-h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={currentTest.stats}
-                    margin={{ left: -20, top: 30, right: 10 }}
+                    margin={{ left: -25, top: 25, right: 10 }}
                   >
                     <CartesianGrid
                       vertical={false}
@@ -460,7 +482,7 @@ export default function Dtm() {
                       padding={{ left: 20, right: 20 }}
                     />
                     <YAxis hide domain={[0, 32]} />
-                    <Bar dataKey="score" radius={[8, 8, 0, 0]} barSize={45}>
+                    <Bar dataKey="score" radius={[10, 10, 0, 0]} barSize={45}>
                       {currentTest.stats.map((entry, index) => (
                         <Cell key={index} fill={entry.color} />
                       ))}
@@ -468,7 +490,7 @@ export default function Dtm() {
                         dataKey="score"
                         position="top"
                         content={(props) => {
-                          const { x, y, width, value, index } = props;
+                          const { x, y, width, index } = props;
                           const max =
                             MAX_SCORES_MAP[currentTest.stats[index].name] || 10;
                           return (
@@ -479,7 +501,7 @@ export default function Dtm() {
                               fontSize={10}
                               fontWeight={900}
                               textAnchor="middle"
-                            >{`${value}/${max}`}</text>
+                            >{`${currentTest.stats[index].score}/${max}`}</text>
                           );
                         }}
                       />
@@ -489,31 +511,31 @@ export default function Dtm() {
               </div>
             </div>
 
-            {/* MOBILDA STATISTIKA KARTALARI (1 QATORDA 4 TA) */}
-            <div className="lg:hidden grid grid-cols-4 gap-2 order-3">
+            {/* Mobil statistika kartalari (1 qatorda 4 ta) */}
+            <div className="lg:hidden grid grid-cols-4 gap-2 mt-2">
               <StatSquare
-                icon={<TrendingUp size={14} />}
+                icon={<TrendingUp size={12} />}
                 label="Reyt"
                 value={student.rank}
                 color="text-blue-500"
                 compact
               />
               <StatSquare
-                icon={<CheckCircle2 size={14} />}
+                icon={<CheckCircle2 size={12} />}
                 label="Gran"
                 value={`${currentTest.grantChance}%`}
                 color="text-[#39B54A]"
                 compact
               />
               <StatSquare
-                icon={<Zap size={14} />}
+                icon={<Zap size={12} />}
                 label="Perc"
                 value={`${student.percentile}%`}
                 color="text-orange-500"
                 compact
               />
               <StatSquare
-                icon={<Brain size={14} />}
+                icon={<Brain size={12} />}
                 label="Anal"
                 value="Ok"
                 color="text-purple-500"
@@ -523,9 +545,9 @@ export default function Dtm() {
           </div>
         </div>
 
-        {/* --- 8. DINAMIKA BO'LIMI (VAQT DAVOMIDAGI O'ZGARISHLAR) --- */}
+        {/* --- DINAMIKA BO'LIMI --- */}
         {comparisonData.length > 1 && (
-          <div className="mt-16 space-y-12">
+          <div className="mt-20 space-y-12">
             <div className="text-center">
               <h2 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter">
                 Natijalar <span className="text-[#39B54A]">dinamikasi</span>
@@ -575,13 +597,13 @@ export default function Dtm() {
       </main>
 
       <footer className="py-20 text-center opacity-10 text-[9px] font-black uppercase tracking-[1em]">
-        Istiqbolluck.uz v2.0
+        Istiqbolluck.uz v2.2
       </footer>
     </div>
   );
 }
 
-// --- 9. YORDAMCHI KOMPONENTLAR (REUSABLE COMPONENTS) ---
+// --- SUB-COMPONENTS ---
 
 function DynamicRow({ title, color, data, keyKey }) {
   const max = MAX_SCORES_MAP[keyKey] || 10;
@@ -669,7 +691,7 @@ function NavBtn({ active, icon, label, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center justify-center gap-2 px-4 md:px-5 py-2.5 rounded-lg text-[9px] font-black uppercase transition-all ${active ? "bg-[#39B54A] text-black shadow-md" : "text-slate-500 hover:text-slate-800"}`}
+      className={`flex items-center justify-center gap-2 px-3 md:px-5 py-2 rounded-lg text-[9px] font-black uppercase transition-all ${active ? "bg-[#39B54A] text-black shadow-md" : "text-slate-500 hover:text-slate-800"}`}
     >
       {icon} {label}
     </button>
@@ -679,21 +701,21 @@ function NavBtn({ active, icon, label, onClick }) {
 function StatSquare({ icon, label, value, color, compact }) {
   return (
     <div
-      className={`bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col items-center justify-center text-center transition-all ${compact ? "p-1 rounded-xl min-h-[70px]" : "p-6 rounded-[2rem] min-h-[120px]"}`}
+      className={`bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col items-center justify-center text-center transition-all ${compact ? "p-1 rounded-xl min-h-[65px]" : "p-4 rounded-[1.5rem] min-h-[110px] flex-1"}`}
     >
       <div
-        className={`bg-zinc-50 dark:bg-zinc-800 rounded-lg flex items-center justify-center mb-1 border dark:border-zinc-700 ${compact ? "w-6 h-6" : "w-11 h-11"} ${color}`}
+        className={`bg-zinc-50 dark:bg-zinc-800 rounded-lg flex items-center justify-center mb-1 border dark:border-zinc-700 ${compact ? "w-5 h-5" : "w-10 h-10"} ${color}`}
       >
         {icon}
       </div>
       <div>
         <p
-          className={`font-black text-slate-400 uppercase tracking-tighter ${compact ? "text-[5px]" : "text-[8px] mb-1"}`}
+          className={`font-black text-slate-400 uppercase tracking-tighter ${compact ? "text-[5px]" : "text-[7px] mb-0.5"}`}
         >
           {label}
         </p>
         <p
-          className={`font-black leading-none ${compact ? "text-[8px]" : "text-xl"}`}
+          className={`font-black leading-none ${compact ? "text-[8px]" : "text-lg tracking-tighter"}`}
         >
           {value}
         </p>
@@ -704,15 +726,15 @@ function StatSquare({ icon, label, value, color, compact }) {
 
 function InfoLine({ icon, label, value }) {
   return (
-    <div className="flex items-center gap-4 text-white/70">
-      <div className="bg-white/10 p-2.5 rounded-xl border border-white/5">
+    <div className="flex items-center gap-3 text-white/70">
+      <div className="bg-white/5 p-2 rounded-xl border border-white/5">
         {icon}
       </div>
       <div>
-        <p className="text-[8px] uppercase font-black text-white/30 tracking-widest mb-0.5">
+        <p className="text-[7px] uppercase font-black text-white/30 tracking-widest mb-0.5">
           {label}
         </p>
-        <p className="text-[11px] font-bold text-white tracking-tight leading-none">
+        <p className="text-[10px] md:text-[11px] font-bold text-white tracking-tight leading-none">
           {value}
         </p>
       </div>
