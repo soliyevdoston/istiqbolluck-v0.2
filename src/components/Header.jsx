@@ -11,29 +11,34 @@ import {
   Youtube,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import ThemeToggle from "./ThemeToggle"; // ThemeToggle komponentingiz
+import ThemeToggle from "./ThemeToggle";
+import { useLanguage } from "../context/LanguageContext"; // Context'ni chaqiramiz
 
 export default function Header() {
+  const { lang, changeLanguage, t } = useLanguage(); // Til tizimi
   const [isOpen, setIsOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
-  const [lang, setLang] = useState("UZ");
   const langRef = useRef(null);
   const location = useLocation();
 
+  // Tillar ro'yxati
   const languages = [
     { code: "UZ", label: "O'zbekcha" },
+    { code: "UZ_KR", label: "Ўзбекча" },
     { code: "RU", label: "Русский" },
     { code: "EN", label: "English" },
   ];
 
+  // Navigatsiya linklari tarjimalar bilan
   const navLinks = [
-    { to: "/", label: "Biz haqimizda" },
-    { to: "/dtm", label: "DTM" },
-    { to: "/life", label: "Maktab hayoti" },
-    { to: "/team", label: "Jamoamiz" },
-    { to: "/blog", label: "Blog" },
+    { to: "/", label: t.about },
+    { to: "/dtm", label: t.dtm },
+    { to: "/life", label: t.life },
+    { to: "/team", label: t.team },
+    { to: "/blog", label: t.blog },
   ];
 
+  // Tashqarini bossa til menyusini yopish
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (langRef.current && !langRef.current.contains(event.target)) {
@@ -44,6 +49,7 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Sahifa o'zgarganda mobil menyuni yopish
   useEffect(() => setIsOpen(false), [location]);
 
   return (
@@ -57,7 +63,7 @@ export default function Header() {
             className="w-6 h-6 md:w-8 md:h-8 object-contain"
           />
           <div className="flex font-bold text-[11px] gap-1 md:text-sm uppercase tracking-tighter">
-            <span className="text-[#E43E1C]  ">ISTIQBOL</span>
+            <span className="text-[#E43E1C]">ISTIQBOL</span>
             <span className="text-[#2E3192]">LUCK</span>
           </div>
         </Link>
@@ -91,15 +97,15 @@ export default function Header() {
 
         {/* --- ACTIONS --- */}
         <div className="flex items-center gap-3 md:gap-5">
-          {/* 1. TIL SELECT */}
+          {/* 1. TIL SELECT (CUSTOM DROPDOWN) */}
           <div className="relative" ref={langRef}>
             <button
               onClick={() => setIsLangOpen(!isLangOpen)}
-              className="flex items-center   py-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
+              className="flex items-center gap-1.5 py-1 px-2 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
             >
               <Globe size={14} className="text-zinc-500" />
               <span className="text-[10px] md:text-[11px] font-black text-zinc-800 dark:text-zinc-200 uppercase tracking-widest">
-                {lang}
+                {lang === "UZ_KR" ? "ЎЗ" : lang}
               </span>
               <ChevronDown
                 size={10}
@@ -113,13 +119,13 @@ export default function Header() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
-                  className="absolute right-0 mt-2 w-32 bg-white dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden"
+                  className="absolute right-0 mt-2 w-36 bg-white dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-[110]"
                 >
                   {languages.map((item) => (
                     <button
                       key={item.code}
                       onClick={() => {
-                        setLang(item.code);
+                        changeLanguage(item.code);
                         setIsLangOpen(false);
                       }}
                       className={`w-full text-left px-4 py-2.5 text-[10px] font-bold uppercase transition-colors
@@ -134,22 +140,24 @@ export default function Header() {
             </AnimatePresence>
           </div>
 
-          {/* 2. DESKTOP THEME TOGGLE (Yangi qo'shildi) */}
           <div className="hidden lg:block border-l border-zinc-100 dark:border-zinc-800 pl-2">
             <ThemeToggle />
           </div>
 
-          {/* 3. TELEFON */}
-          <a href="tel:+998901234567" className="flex items-center gap-2 group">
+          {/* TELEFON */}
+          <a
+            href={`tel:${t.phone.replace(/\s/g, "")}`}
+            className="flex items-center gap-2 group"
+          >
             <div className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full bg-[#39B54A] text-white transition-transform group-hover:scale-110 shadow-lg shadow-[#39B54A]/20">
               <Phone size={14} fill="currentColor" />
             </div>
             <span className="hidden md:inline text-[13px] font-bold text-black dark:text-white group-hover:text-[#39B54A] transition-colors">
-              +998 90 123 45 67
+              {t.phone}
             </span>
           </a>
 
-          {/* 4. BURGER MENU (Mobil uchun) */}
+          {/* BURGER MENU */}
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="lg:hidden p-1.5 text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md transition-colors"
@@ -180,7 +188,7 @@ export default function Header() {
               <div>
                 <div className="flex justify-between items-center mb-6">
                   <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                    Menyu
+                    {t.menu}
                   </span>
                   <button
                     onClick={() => setIsOpen(false)}
@@ -206,10 +214,10 @@ export default function Header() {
                 </nav>
               </div>
 
-              {/* Footer Section Mobile */}
+              {/* Mobile Footer */}
               <div className="space-y-3">
                 <a
-                  href="tel:+998901234567"
+                  href={`tel:${t.phone.replace(/\s/g, "")}`}
                   className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800 group active:scale-95 transition-all"
                 >
                   <div className="w-9 h-9 flex items-center justify-center rounded-full bg-[#39B54A] text-white shrink-0">
@@ -217,17 +225,17 @@ export default function Header() {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[9px] font-bold text-zinc-400 uppercase">
-                      Aloqa
+                      {t.contact}
                     </span>
                     <span className="text-xs font-bold dark:text-white group-hover:text-[#39B54A]">
-                      +998 90 123 45 67
+                      {t.phone}
                     </span>
                   </div>
                 </a>
 
                 <div className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800">
                   <span className="text-[10px] font-bold text-zinc-500 uppercase">
-                    Mavzu
+                    {t.theme}
                   </span>
                   <ThemeToggle />
                 </div>

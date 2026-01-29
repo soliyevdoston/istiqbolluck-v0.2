@@ -9,10 +9,12 @@ import {
   Settings2,
   Sparkles,
 } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext"; // Context'ni import qilish
 
 export default function SchoolDtm() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useLanguage(); // Til ma'lumotlarini olish
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -20,11 +22,9 @@ export default function SchoolDtm() {
 
   return (
     <div className="bg-[#f0f2f5] dark:bg-[#050505] h-screen w-full text-slate-900 dark:text-white transition-all overflow-hidden flex flex-col">
-      {/* Asosiy konteyner */}
       <div className="max-w-7xl mx-auto w-full h-full flex flex-col px-4 sm:px-10">
-        {/* 1. HEADER & NAVIGATION (Oldingi sahifa bilan bir xil) */}
+        {/* 1. HEADER & NAVIGATION */}
         <div className="pt-24 sm:pt-28 flex flex-col items-center gap-8">
-          {/* Sahifalararo o'tkazgich */}
           <div className="flex justify-center">
             <div className="inline-flex p-1 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md rounded-2xl border border-white dark:border-zinc-800 shadow-xl">
               <button
@@ -36,7 +36,7 @@ export default function SchoolDtm() {
                 }`}
               >
                 <User size={16} />
-                O'quvchi DTM ko'rsatkichi
+                {t.student_btn} {/* Tarjima qilindi */}
               </button>
               <button
                 onClick={() => navigate("/schooldtm")}
@@ -47,12 +47,11 @@ export default function SchoolDtm() {
                 }`}
               >
                 <SchoolIcon size={16} />
-                Maktab DTM ko'rsatkichi
+                {t.school_btn} {/* Tarjima qilindi */}
               </button>
             </div>
           </div>
 
-          {/* Logo qismi */}
           <div className="flex items-center gap-3">
             <Zap className="text-[#39B54A] w-7 h-7" fill="#39B54A" />
             <h1 className="text-xl font-black uppercase italic tracking-tighter">
@@ -61,19 +60,17 @@ export default function SchoolDtm() {
           </div>
         </div>
 
-        {/* 2. TEZ ORADA CARD (Markazlashtirilgan) */}
+        {/* 2. TEZ ORADA CARD */}
         <main className="flex-1 flex items-center justify-center pb-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="w-full max-w-2xl bg-white dark:bg-zinc-900/50 p-8 sm:p-16 rounded-[2.5rem] sm:rounded-[4rem] border border-white dark:border-zinc-800 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] text-center relative overflow-hidden"
           >
-            {/* Dizayn uchun fon elementlari */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#39B54A] opacity-[0.03] rounded-full -mr-16 -mt-16 blur-3xl"></div>
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#2E3192] opacity-[0.03] rounded-full -ml-16 -mb-16 blur-3xl"></div>
 
             <div className="relative z-10">
-              {/* Animatsiyali Icon */}
               <div className="flex justify-center mb-6">
                 <div className="relative">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[#39B54A]/10 rounded-[2rem] flex items-center justify-center text-[#39B54A]">
@@ -92,23 +89,23 @@ export default function SchoolDtm() {
                 </div>
               </div>
 
-              {/* Matnlar */}
               <h2 className="text-3xl sm:text-5xl font-black uppercase italic tracking-tighter mb-4">
-                TEZ <span className="text-[#39B54A]">ORADA!</span>
+                {t.school_title.split(" ")[0]}{" "}
+                <span className="text-[#39B54A]">
+                  {t.school_title.split(" ")[1]}
+                </span>
               </h2>
 
               <p className="text-slate-500 dark:text-zinc-400 font-bold text-xs sm:text-sm max-w-sm mx-auto leading-relaxed mb-8 uppercase tracking-widest">
-                Maktab ko'rsatkichlari va umumiy tahlillar bo'limi
-                loyihalashtirilmoqda.
+                {t.school_desc}
               </p>
 
-              {/* Status belgilari */}
               <div className="flex justify-center gap-3">
                 <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-zinc-800 rounded-xl text-[9px] font-black uppercase text-slate-500 border border-slate-200 dark:border-zinc-700">
-                  <Settings2 size={12} /> Tizim tahlili
+                  <Settings2 size={12} /> {t.system_analysis}
                 </div>
                 <div className="flex items-center gap-2 px-4 py-2 bg-[#39B54A]/5 rounded-xl text-[9px] font-black uppercase text-[#39B54A] border border-[#39B54A]/10">
-                  <Sparkles size={12} /> Yangi Dashboard
+                  <Sparkles size={12} /> {t.new_dashboard}
                 </div>
               </div>
             </div>
@@ -116,9 +113,8 @@ export default function SchoolDtm() {
         </main>
       </div>
 
-      {/* Footer (Eng pastda) */}
       <footer className="absolute bottom-6 w-full text-center opacity-10 text-[9px] font-black uppercase tracking-[1em] select-none">
-        Istiqbolluck.uz v2.0
+        {t.developed} v2.2
       </footer>
     </div>
   );

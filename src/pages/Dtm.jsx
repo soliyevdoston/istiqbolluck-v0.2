@@ -31,6 +31,7 @@ import {
   Star,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "../context/LanguageContext"; // TIL TIZIMINI IMPORT QILISH
 
 // --- 1. RANG VA MAKSIMAL BALLAR KONSTANTALARI ---
 const COLORS = {
@@ -52,7 +53,7 @@ const MAX_SCORES_MAP = {
   totalBall: 189,
 };
 
-// --- 2. ILK BOR SAHIFA OCHILGANDA KO'RINADIGAN DEFAULT MA'LUMOT ---
+// --- 2. DEFAULT MA'LUMOT ---
 const DEFAULT_STUDENT = {
   name: "Dostonbek Solijonov",
   class: "Bitirgan",
@@ -77,6 +78,7 @@ const DEFAULT_STUDENT = {
 };
 
 export default function Dtm() {
+  const { t } = useLanguage(); // TARJIMANI OLISH
   const [searchId, setSearchId] = useState("");
   const [currentId, setCurrentId] = useState("");
   const [testIndex, setTestIndex] = useState(0);
@@ -88,13 +90,11 @@ export default function Dtm() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Toast xabarini chiqarish funksiyasi
   const notify = (msg, type = "success") => {
     setToast({ show: true, msg, type });
     setTimeout(() => setToast({ ...toast, show: false }), 3000);
   };
 
-  // --- 3. MA'LUMOTLARNI YUKLASH VA TARTIBLASH ---
   useEffect(() => {
     const fetchSheetsData = async () => {
       try {
@@ -151,6 +151,7 @@ export default function Dtm() {
             ],
           });
         });
+
         Object.keys(formatted).forEach((key) => {
           formatted[key].history.reverse();
         });
@@ -203,13 +204,12 @@ export default function Dtm() {
     if (studentsData[cleanId]) {
       setCurrentId(cleanId);
       setTestIndex(0);
-      notify("Natijalar muvaffaqiyatli yangilandi!", "success");
+      notify(t.toast_success, "success");
     } else {
-      notify("Bunday ID raqamli o'quvchi topilmadi!", "error");
+      notify(t.toast_error, "error");
     }
   };
 
-  // --- 4. YUKLANISH ANIMATSIYASI ---
   if (loading)
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-[#f0f2f5] dark:bg-[#080808] z-[100]">
@@ -225,7 +225,6 @@ export default function Dtm() {
 
   return (
     <div className="bg-[#f0f2f5] dark:bg-[#050505] min-h-screen text-slate-900 dark:text-white font-sans overflow-x-hidden pt-16 md:pt-16 transition-all">
-      {/* --- TOAST BILDIRISHNOMA --- */}
       <AnimatePresence>
         {toast.show && (
           <motion.div
@@ -248,7 +247,6 @@ export default function Dtm() {
         )}
       </AnimatePresence>
 
-      {/* --- 5. HEADER --- */}
       <header className="px-4 md:px-10 max-w-[1440px] mx-auto flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <div className="bg-[#39B54A] p-2.5 rounded-2xl shadow-xl shadow-[#39B54A]/20">
@@ -259,10 +257,8 @@ export default function Dtm() {
               IstiqbolLuck <span className="text-[#39B54A]">DTM</span>
             </h1>
             <p className="text-[9px] md:text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-widest mt-1 leading-relaxed">
-              Natijalarni kuzatish endi yanada{" "}
-              <span className="text-[#39B54A]">osonroq</span>.{" "}
-              <br className="hidden md:block" /> ID raqamni kiriting va
-              natijalar bilan tanishing.
+              {t.header_sub.split("<br")[0]} <br className="hidden md:block" />{" "}
+              {t.header_sub.split("/>")[1]}
             </p>
           </div>
         </div>
@@ -273,7 +269,7 @@ export default function Dtm() {
           <input
             value={searchId}
             onChange={(e) => setSearchId(e.target.value)}
-            placeholder="O'quvchi ID..."
+            placeholder={t.id_placeholder}
             className="w-full bg-white dark:bg-zinc-900 border-2 border-[#39B54A]/20 focus:border-[#39B54A] rounded-xl py-3 px-5 text-xs font-bold outline-none shadow-sm transition-all"
           />
           <button
@@ -285,13 +281,12 @@ export default function Dtm() {
         </form>
       </header>
 
-      {/* MOBIL QIDIRUV */}
       <div className="px-4 md:px-10 max-w-[1440px] mx-auto mb-6 md:hidden">
         <form onSubmit={handleSearch} className="relative w-full">
           <input
             value={searchId}
             onChange={(e) => setSearchId(e.target.value)}
-            placeholder="O'quvchi ID raqami..."
+            placeholder={t.id_placeholder}
             className="w-full bg-white dark:bg-zinc-900 border-2 border-[#39B54A]/30 focus:border-[#39B54A] shadow-xl rounded-2xl py-4 px-6 text-sm font-bold outline-none"
           />
           <button
@@ -304,14 +299,10 @@ export default function Dtm() {
       </div>
 
       <main className="max-w-[1440px] mx-auto px-4 md:px-10 pb-12">
-        {/* --- 6. HERO SECTION (H-SCREEN) --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch lg:h-[75vh] min-h-[500px] ">
-          {/* SIDEBAR: YANGILANGAN ISM-FAMILIYA VA KARTALAR */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch lg:h-[75vh] min-h-[500px]">
           <div className="lg:col-span-4 flex flex-col gap-1 order-1">
-            {/* O'quvchi kartasi (Boyitilgan dizayn) */}
-            <div className="bg-[#0f172a] text-white p-1 md:p-1 rounded-[2.5rem] shadow-2xl relative overflow-hidden border-b-8 border-[#39B54A] flex-1 flex flex-col justify-center items-center text-center">
+            <div className="bg-[#0f172a] text-white p-2 md:p-2 rounded-[2.5rem] shadow-2xl relative overflow-hidden border-b-8 border-[#39B54A] flex-1 flex flex-col justify-center items-center text-center">
               <div className="relative z-10 w-full">
-                {/* Avatar qismi */}
                 <div className="w-20 h-20 bg-gradient-to-br from-[#39B54A] to-emerald-700 rounded-full mx-auto mb-4 flex items-center justify-center shadow-2xl border-4 border-white/10 ring-4 ring-[#39B54A]/20">
                   <span className="text-2xl font-black">
                     {student.name
@@ -323,27 +314,26 @@ export default function Dtm() {
                 <div className="inline-flex items-center gap-2 bg-white/5 px-3 py-1 rounded-full border border-white/10 mb-4">
                   <span className="w-2 h-2 bg-[#39B54A] rounded-full animate-pulse"></span>
                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">
-                    Holati: Faol
+                    {t.status_active}
                   </span>
                 </div>
                 <h2 className="text-2xl md:text-3xl font-black italic uppercase leading-tight mb-6">
                   {student.name}
                 </h2>
-
                 <div className="grid grid-cols-1 gap-3 text-left bg-white/5 p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
                   <InfoLine
                     icon={<Trophy size={14} className="text-[#39B54A]" />}
-                    label="Yo'nalish"
+                    label={t.direction_label}
                     value={student.direction}
                   />
                   <InfoLine
                     icon={<School size={14} className="text-blue-400" />}
-                    label="Sinf"
+                    label={t.class_label}
                     value={student.class}
                   />
                   <InfoLine
                     icon={<Star size={14} className="text-yellow-400" />}
-                    label="Sertifikatlar"
+                    label={t.cert_label}
                     value={`${currentTest.cert} ta`}
                   />
                 </div>
@@ -353,61 +343,58 @@ export default function Dtm() {
                 size={180}
               />
             </div>
-
-            {/* Desktop Statistika (2x2) */}
             <div className="hidden lg:grid grid-cols-2 gap-2 h-[30%]">
               <StatSquare
                 icon={<TrendingUp size={16} />}
-                label="Reyting"
+                label={t.rank_label}
                 value={student.rank}
                 color="text-blue-500"
               />
               <StatSquare
                 icon={<CheckCircle2 size={16} />}
-                label="Grant"
+                label={t.grant_label}
                 value={`${currentTest.grantChance}%`}
                 color="text-[#39B54A]"
               />
               <StatSquare
                 icon={<Zap size={16} />}
-                label="Percent"
+                label={t.percent_label}
                 value={`${student.percentile}%`}
                 color="text-orange-500"
               />
               <StatSquare
                 icon={<Brain size={16} />}
-                label="Analiz"
+                label={t.analysis_label}
                 value="Ijobiy"
                 color="text-purple-500"
               />
             </div>
           </div>
 
-          {/* DIAGRAMMA QISMI */}
           <div className="lg:col-span-8 flex flex-col gap-4 order-2">
             <div className="bg-white dark:bg-zinc-900 p-3 md:p-4 rounded-[1.5rem] shadow-xl border border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1.5 rounded-xl w-full md:w-auto">
+              <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl w-full md:w-auto">
                 <NavBtn
                   active={location.pathname === "/dtm"}
                   icon={<User size={13} />}
-                  label="O'quvchi"
+                  label={t.student_btn}
                   onClick={() => navigate("/dtm")}
                 />
                 <NavBtn
                   active={location.pathname === "/schooldtm"}
                   icon={<School size={13} />}
-                  label="Maktab"
+                  label={t.school_btn}
                   onClick={() => navigate("/schooldtm")}
                 />
               </div>
-
               <div className="relative w-full md:w-56">
                 <button
                   onClick={() => setIsOpen(!isOpen)}
                   className="w-full bg-zinc-50 dark:bg-zinc-800 rounded-xl py-2.5 px-4 text-[10px] font-black uppercase flex items-center justify-between border-2 border-transparent hover:border-[#39B54A] transition-all"
                 >
                   <span>
-                    {currentTest.date} {testIndex === 0 ? "(eng yangi)" : ""}
+                    {currentTest.date}{" "}
+                    {testIndex === 0 ? `(${t.latest_label})` : ""}
                   </span>
                   <motion.div
                     animate={{ rotate: isOpen ? 180 : 0 }}
@@ -437,7 +424,7 @@ export default function Dtm() {
                             <span>{h.date}</span>{" "}
                             {i === 0 && (
                               <span className="text-[7px] border-[#82ce8c] border text-black px-1 rounded">
-                                Yangi
+                                YANGI
                               </span>
                             )}
                           </button>
@@ -452,11 +439,11 @@ export default function Dtm() {
             <div className="bg-white dark:bg-zinc-900 p-6 md:p-8 rounded-[2.5rem] shadow-xl border border-zinc-200 dark:border-zinc-800 flex-1 flex flex-col">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg md:text-xl font-black uppercase italic tracking-tighter leading-none">
-                  Imtihon <span className="text-[#39B54A]">Tahlili</span>
+                  {t.analysis_title}
                 </h3>
                 <div className="bg-[#39B54A] px-4 py-2 rounded-xl text-black shadow-md text-center">
                   <p className="text-[7px] font-black uppercase mb-0.5 opacity-60">
-                    Jami
+                    {t.total_label}
                   </p>
                   <p className="text-xl font-black leading-none">
                     {currentTest.totalBall}
@@ -511,32 +498,31 @@ export default function Dtm() {
               </div>
             </div>
 
-            {/* Mobil statistika kartalari (1 qatorda 4 ta) */}
             <div className="lg:hidden grid grid-cols-4 gap-2 mt-2">
               <StatSquare
                 icon={<TrendingUp size={12} />}
-                label="Reyt"
+                label={t.rank_short}
                 value={student.rank}
                 color="text-blue-500"
                 compact
               />
               <StatSquare
                 icon={<CheckCircle2 size={12} />}
-                label="Gran"
+                label={t.grant_short}
                 value={`${currentTest.grantChance}%`}
                 color="text-[#39B54A]"
                 compact
               />
               <StatSquare
                 icon={<Zap size={12} />}
-                label="Perc"
+                label={t.percent_short}
                 value={`${student.percentile}%`}
                 color="text-orange-500"
                 compact
               />
               <StatSquare
                 icon={<Brain size={12} />}
-                label="Anal"
+                label={t.analysis_short}
                 value="Ok"
                 color="text-purple-500"
                 compact
@@ -545,48 +531,47 @@ export default function Dtm() {
           </div>
         </div>
 
-        {/* --- DINAMIKA BO'LIMI --- */}
         {comparisonData.length > 1 && (
-          <div className="mt-25 space-y-12">
+          <div className="mt-20 space-y-12">
             <div className="text-center">
-              <h2 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter">
-                Natijalar <span className="text-[#39B54A]">dinamikasi</span>
+              <h2 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter">
+                {t.dynamics_title}
               </h2>
-              <div className="w-16 h-1 bg-[#39B54A] mx-auto mt-4 rounded-full" />
+              <div className="w-14 h-1 bg-[#39B54A] mx-auto mt-4 rounded-full" />
             </div>
             <div className="flex flex-col gap-10">
               <DynamicRow
-                title="Umumiy ballar dinamikasi"
+                title={t.dyn_total}
                 color="#3b82f6"
                 data={get20SlotsData("totalBall")}
                 keyKey="totalBall"
               />
               <DynamicRow
-                title="Mutaxassislik: 1-Blok fan tahlili"
+                title={t.dyn_block1}
                 color="#2E3192"
                 data={get20SlotsData("1-Blok")}
                 keyKey="1-Blok"
               />
               <DynamicRow
-                title="Mutaxassislik: 2-Blok fan tahlili"
+                title={t.dyn_block2}
                 color="#F97316"
                 data={get20SlotsData("2-Blok")}
                 keyKey="2-Blok"
               />
               <DynamicRow
-                title="Majburiy fan: Ona tili"
+                title={t.dyn_sub1}
                 color="#39B54A"
                 data={get20SlotsData("Ona tili")}
                 keyKey="Ona tili"
               />
               <DynamicRow
-                title="Majburiy fan: Matematika"
+                title={t.dyn_sub2}
                 color="#ef4444"
                 data={get20SlotsData("Matematika")}
                 keyKey="Matematika"
               />
               <DynamicRow
-                title="Majburiy fan: Tarix"
+                title={t.dyn_sub3}
                 color="#a855f7"
                 data={get20SlotsData("Tarix")}
                 keyKey="Tarix"
@@ -595,7 +580,6 @@ export default function Dtm() {
           </div>
         )}
       </main>
-
       <footer className="py-20 text-center opacity-10 text-[9px] font-black uppercase tracking-[1em]">
         Istiqbolluck.uz v2.2
       </footer>
@@ -603,9 +587,8 @@ export default function Dtm() {
   );
 }
 
-// --- SUB-COMPONENTS ---
-
 function DynamicRow({ title, color, data, keyKey }) {
+  const { t } = useLanguage();
   const max = MAX_SCORES_MAP[keyKey] || 10;
   return (
     <div className="bg-white dark:bg-[#111111] p-6 md:p-8 rounded-[3rem] shadow-xl border border-zinc-200 dark:border-zinc-800 w-full h-[480px] flex flex-col">
@@ -701,21 +684,21 @@ function NavBtn({ active, icon, label, onClick }) {
 function StatSquare({ icon, label, value, color, compact }) {
   return (
     <div
-      className={`bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col items-center justify-center text-center transition-all ${compact ? "p-1 rounded-xl min-h-[65px]" : "p-4 rounded-[1.5rem] min-h-[110px] flex-1"}`}
+      className={`bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col items-center justify-center text-center transition-all ${compact ? "p-1 rounded-xl min-h-[65px]" : "p-4 rounded-[1.5rem] min-h-[100px] flex-1"}`}
     >
       <div
-        className={`bg-zinc-50 dark:bg-zinc-800 rounded-lg flex items-center justify-center mb-1 border dark:border-zinc-700 ${compact ? "w-5 h-5" : "w-10 h-10"} ${color}`}
+        className={`bg-zinc-50 dark:bg-zinc-800 rounded-lg flex items-center justify-center mb-1.5 border dark:border-zinc-700 ${compact ? "w-5 h-5" : "w-9 h-9"} ${color}`}
       >
         {icon}
       </div>
       <div>
         <p
-          className={`font-black text-slate-400 uppercase tracking-tighter ${compact ? "text-[5px]" : "text-[7px] mb-0.5"}`}
+          className={`font-black text-slate-400 uppercase tracking-tighter ${compact ? "text-[5px]" : "text-[6px] mb-0.5"}`}
         >
           {label}
         </p>
         <p
-          className={`font-black leading-none ${compact ? "text-[8px]" : "text-lg tracking-tighter"}`}
+          className={`font-black leading-none ${compact ? "text-[8px]" : "text-base tracking-tighter"}`}
         >
           {value}
         </p>

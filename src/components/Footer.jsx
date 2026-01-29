@@ -7,28 +7,30 @@ import {
   Phone,
   ArrowUpRight,
 } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext"; // Context'ni import qilish
 
 export default function Footer() {
+  const { t } = useLanguage(); // Tarjima obyektini olish
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Navigatsiya linklari tarjimalar bilan
   const navLinks = [
-    { to: "/", label: "Biz haqimizda" },
-    { to: "/dtm", label: "DTM" },
-    { to: "/life", label: "Maktab hayoti" },
-    { to: "/team", label: "Jamoamiz" },
-    { to: "/blog", label: "Blog" },
+    { to: "/", label: t.about },
+    { to: "/dtm", label: t.dtm },
+    { to: "/life", label: t.life },
+    { to: "/team", label: t.team },
+    { to: "/blog", label: t.blog },
   ];
-
-  const primaryGreen = "#39B54A";
 
   return (
     <footer className="relative mt-10 border-t border-gray-400 dark:border-zinc-900 bg-[#e2dfdf] dark:bg-black transition-colors duration-300">
       <div className="max-w-7xl mx-auto py-8 md:py-12 px-5 md:px-10">
-        {/* ASOSIY GRID: Mobilda 2 ustun, Desktopda 4 ustun */}
+        {/* ASOSIY GRID */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
-          {/* 1. LOGO VA TA'RIF (Mobilda 2 ustunni egallaydi) */}
+          {/* 1. LOGO VA TA'RIF */}
           <div className="col-span-2 lg:col-span-1 flex flex-col items-start space-y-4">
             <Link
               to="/"
@@ -41,20 +43,19 @@ export default function Footer() {
                 className="w-8 h-8 object-contain"
               />
               <div className="text-base md:text-lg font-bold uppercase tracking-tighter">
-                <span className="text-[#E43E1C]  ">ISTIQBOL</span>
+                <span className="text-[#E43E1C]">ISTIQBOL</span>
                 <span className="text-[#2E3192]">LUCK</span>
               </div>
             </Link>
             <p className="text-zinc-500 dark:text-zinc-400 text-[12px] leading-relaxed max-w-[240px]">
-              Muvaffaqiyatli kelajak poydevorini biz bilan quring. Toza ta'lim,
-              minimalist yondashuv.
+              {t.footerDesc}
             </p>
           </div>
 
-          {/* 2. BO'LIMLAR */}
+          {/* 2. BO'LIMLAR (Tarjima qilindi) */}
           <div className="flex flex-col items-start">
             <h4 className="font-bold text-[10px] uppercase tracking-widest text-zinc-400 mb-4">
-              Bo'limlar
+              {t.sections}
             </h4>
             <nav className="flex flex-col gap-2">
               {navLinks.map((link) => (
@@ -70,19 +71,19 @@ export default function Footer() {
             </nav>
           </div>
 
-          {/* 3. ALOQA */}
+          {/* 3. ALOQA (Tarjima qilindi) */}
           <div className="flex flex-col items-start">
             <h4 className="font-bold text-[10px] uppercase tracking-widest text-zinc-400 mb-4">
-              Aloqa
+              {t.contact}
             </h4>
             <div className="flex flex-col gap-3">
               <a
-                href="tel:+998901234567"
+                href={`tel:${t.phone.replace(/\s/g, "")}`}
                 className="flex items-center gap-2 group"
               >
                 <Phone size={14} className="text-[#39B54A]" />
                 <span className="text-[13px] font-bold dark:text-white group-hover:text-[#39B54A] transition-colors">
-                  +998 90 123 45 67
+                  {t.phone}
                 </span>
               </a>
               <a
@@ -97,10 +98,10 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* 4. IJTIMOIY TARMOQLAR */}
+          {/* 4. IJTIMOIY TARMOQLAR (Tarjima qilindi) */}
           <div className="flex flex-col items-start lg:items-end">
             <h4 className="font-bold text-[10px] uppercase tracking-widest text-zinc-400 mb-4">
-              Tarmoqlar
+              {t.networks}
             </h4>
             <div className="flex gap-3 mb-6">
               {[Instagram, Send, Youtube].map((Icon, i) => (
@@ -117,16 +118,16 @@ export default function Footer() {
               onClick={scrollToTop}
               className="group flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#39B54A] hover:text-black dark:hover:text-white transition-colors"
             >
-              Tepaga
+              {t.toTop}
               <ArrowUpRight size={14} />
             </button>
           </div>
         </div>
 
-        {/* FOOTER PASTKI QISMI */}
+        {/* FOOTER PASTKI QISMI (Tarjima qilindi) */}
         <div className="mt-10 pt-6 border-t border-zinc-50 dark:border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-[10px] text-zinc-400 font-medium tracking-wider text-center md:text-left">
-            © 2026 ISTIQBOL LUCK. BARCHA HUQUQLAR HIMOYALANGAN.
+            {t.rights}
           </p>
 
           <a
@@ -135,7 +136,7 @@ export default function Footer() {
             rel="noreferrer"
             className="text-[10px] text-zinc-400 hover:text-black dark:hover:text-white transition-colors font-bold tracking-widest"
           >
-            DEVELOPED BY SOLIYEV.UZ
+            {t.developed}
           </a>
         </div>
       </div>

@@ -10,25 +10,31 @@ import SchoolLife from "./pages/SchoolLife";
 import BlogDetail from "./pages/BlogDetail";
 import ScrollToTop from "./components/ScrollToTop";
 import SchoolDtm from "./pages/SchoolDtm";
+import { LanguageProvider } from "./context/LanguageContext";
 
 function App() {
   return (
-    <Router>
-      <ScrollToTop />
-      <Header />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/dtm" element={<Dtm />} />
-        <Route path="/schooldtm" element={<SchoolDtm />} />
-        <Route path="/team" element={<Team />} />
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/life" element={<SchoolLife />} />
-        <Route path="/blog/:id" element={<BlogDetail />} />
-      </Routes>
+    // 1. LanguageProvider barcha komponentlarni o'rab turishi shart
+    <LanguageProvider>
+      <Router>
+        <ScrollToTop />
+        <Header />
 
-      <AIChat />
-      <Footer />
-    </Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/dtm" element={<Dtm />} />
+          <Route path="/schooldtm" element={<SchoolDtm />} />
+          <Route path="/team" element={<Team />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/life" element={<SchoolLife />} />
+          <Route path="/blog/:id" element={<BlogDetail />} />
+        </Routes>
+
+        <AIChat />
+        <Footer />
+      </Router>
+    </LanguageProvider>
   );
 }
+
 export default App;
