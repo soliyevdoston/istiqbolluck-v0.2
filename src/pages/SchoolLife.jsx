@@ -26,46 +26,48 @@ const wrap = (min, max, v) =>
 // --- 2. OPTIMIZED DRAGGABLE MARQUEE ---
 const DraggableMarquee = ({ items = [], baseVelocity = -0.4 }) => {
   const baseX = useMotionValue(0);
-  // wrap(-25, -50, v) chunki biz 4 marta takrorlaymiz (har biri 25%)
-  const x = useTransform(baseX, (v) => `${wrap(-25, -50, v)}%`);
+  const x = useTransform(baseX, (v) => `${wrap(-20, -40, v)}%`); // Match Home logic
   const isDragging = useRef(false);
 
   useAnimationFrame((t, delta) => {
     if (!isDragging.current) {
-      let moveBy = baseVelocity * (delta / 1000) * 3; // Tezlik yana pasaytirildi (5 -> 3)
+      let moveBy = baseVelocity * (delta / 1000); // Standardize velocity calc (removed *3)
       baseX.set(baseX.get() + moveBy);
     }
   });
 
   return (
-    <div className="overflow-hidden flex whitespace-nowrap py-3 w-full cursor-grab active:cursor-grabbing">
+    <div className="overflow-hidden flex whitespace-nowrap py-3 w-full cursor-grab active:cursor-grabbing select-none">
       <motion.div
-        className="flex gap-3 md:gap-14 will-change-transform" // <--- PERFORMANCE OPTIMIZATION
+        className="flex gap-3 md:gap-14 will-change-transform"
         style={{ x }}
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.05}
-        dragMomentum={false}
+        dragElastic={0.05} // Match Home logic
         onDragStart={() => (isDragging.current = true)}
         onDragEnd={() => (isDragging.current = false)}
         onDrag={(event, info) => {
           const currentX = baseX.get();
-          // Drag sezuvchanligi
-          baseX.set(currentX + (info.delta.x / window.innerWidth) * 50);
+          // Match Home logic sensitivity (20 instead of 50)
+          baseX.set(currentX + (info.delta.x / window.innerWidth) * 20);
         }}
       >
-        {/* Kontentni 4 marta takrorlaymiz */}
-        {[...items, ...items, ...items, ...items].map((img, i) => (
-          <div key={i} className="flex-shrink-0">
-            <div className="w-[200px] h-[140px] md:w-[360px] md:h-[250px] overflow-hidden rounded-[1.5rem] md:rounded-[2rem] border-[2px] md:border-[4px] border-white dark:border-zinc-900 shadow-xl pointer-events-none select-none">
-              <img
-                src={img}
-                alt="Gallery"
-                draggable="false"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
+        {/* Adopt the multiple duplication strategy of Home/PremiumInfiniteSlider (4x loop) */}
+        {[...Array(4)].map((_, outerIdx) => (
+          <React.Fragment key={outerIdx}>
+            {items.map((img, i) => (
+              <div key={`${outerIdx}-${i}`} className="flex-shrink-0">
+                <div className="w-[200px] h-[140px] md:w-[360px] md:h-[250px] overflow-hidden rounded-[1.5rem] md:rounded-[2rem] border-[2px] md:border-[4px] border-white dark:border-zinc-900 shadow-xl pointer-events-none select-none">
+                  <img
+                    src={img}
+                    alt="Gallery"
+                    draggable="false"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            ))}
+          </React.Fragment>
         ))}
       </motion.div>
     </div>

@@ -31,42 +31,46 @@ const wrap = (min, max, v) =>
 
 const DraggableMarquee = ({ items, baseVelocity = -0.4 }) => {
   const baseX = useMotionValue(0);
-  const x = useTransform(baseX, (v) => `${wrap(-50, 0, v)}%`);
+  const x = useTransform(baseX, (v) => `${wrap(-20, -40, v)}%`); // Match PremiumInfiniteSlider wrap
   const isDragging = useRef(false);
 
   useAnimationFrame((t, delta) => {
     if (!isDragging.current) {
-      let moveBy = baseVelocity * (delta / 1000) * 2;
+      let moveBy = baseVelocity * (delta / 1000); // Standardize velocity calc
       baseX.set(baseX.get() + moveBy);
     }
   });
 
   return (
-    <div className="overflow-hidden flex whitespace-nowrap py-4 w-full cursor-grab active:cursor-grabbing">
+    <div className="overflow-hidden flex whitespace-nowrap py-4 w-full cursor-grab active:cursor-grabbing select-none">
       <motion.div
-        className="flex gap-4 md:gap-8"
+        className="flex gap-4 md:gap-8 will-change-transform"
         style={{ x }}
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0}
-        dragMomentum={false}
+        dragElastic={0.05} // Match PremiumInfiniteSlider
         onDragStart={() => (isDragging.current = true)}
         onDragEnd={() => (isDragging.current = false)}
-        onDrag={(event, info) => {
+        onDrag={(e, info) => {
           const currentX = baseX.get();
-          const deltaInUnits = (info.delta.x / window.innerWidth) * 50;
-          baseX.set(currentX + deltaInUnits);
+          // Match PremiumInfiniteSlider drag sensitivity logic
+          baseX.set(currentX + (info.delta.x / window.innerWidth) * 20);
         }}
       >
-        {[...items, ...items, ...items].map((item, i) => (
-          <div key={i} className="flex-shrink-0">
-            <img
-              src={item}
-              alt="Gallery"
-              draggable="false"
-              className="h-[200px] md:h-[300px] w-[280px] md:w-[450px] object-cover rounded-[2rem] pointer-events-none shadow-lg select-none"
-            />
-          </div>
+        {/* Adopt the multiple duplication strategy of PremiumInfiniteSlider */}
+        {[...Array(4)].map((_, outerIdx) => (
+          <React.Fragment key={outerIdx}>
+            {items.map((item, i) => (
+              <div key={`${outerIdx}-${i}`} className="flex-shrink-0">
+                <img
+                  src={item}
+                  alt="Gallery"
+                  draggable="false"
+                  className="h-[200px] md:h-[300px] w-[280px] md:w-[450px] object-cover rounded-[2rem] pointer-events-none shadow-lg select-none"
+                />
+              </div>
+            ))}
+          </React.Fragment>
         ))}
       </motion.div>
     </div>
