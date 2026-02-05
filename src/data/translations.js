@@ -1516,6 +1516,11 @@ const ruTexts = {
         role: "10-класс",
         message: "Лучшее место для подготовки к олимпиадам.",
       },
+      {
+        name: "Омина Эргашева",
+        role: "8-класс",
+        message: "Уроки проводятся вместе с практикой.",
+      },
     ],
     uni_subtitle: "Путь к успеху",
     uni_title1: "ВЫПУСКНИКИ",
@@ -2035,6 +2040,11 @@ const enTexts = {
         name: "Bekzod Rahmonov",
         role: "10th grade",
         message: "Best place to prepare for Olympiads.",
+      },
+      {
+        name: "Omina Ergasheva",
+        role: "8th grade",
+        message: "Lessons are conducted together with practice.",
       },
     ],
     uni_subtitle: "Path to Success",
