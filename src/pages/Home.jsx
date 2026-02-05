@@ -66,6 +66,7 @@ const DraggableMarquee = ({ items, baseVelocity = -0.4 }) => {
                   src={item}
                   alt="Gallery"
                   draggable="false"
+                  loading="lazy"
                   className="h-[200px] md:h-[300px] w-[280px] md:w-[450px] object-cover rounded-[2rem] pointer-events-none shadow-lg select-none"
                 />
               </div>
@@ -159,7 +160,7 @@ const VideoFeedbackCard = ({ feedback }) => {
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 group-hover:border-[#39B54A]/50 transition-colors"
+                className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center border border-white/20 group-hover:border-[#39B54A]/50 transition-colors"
               >
                 <Play
                   className="text-white fill-white group-hover:text-[#39B54A] group-hover:fill-[#39B54A] transition-all"

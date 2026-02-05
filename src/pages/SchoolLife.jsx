@@ -62,6 +62,7 @@ const DraggableMarquee = ({ items = [], baseVelocity = -0.4 }) => {
                     src={img}
                     alt="Gallery"
                     draggable="false"
+                    loading="lazy"
                     className="w-full h-full object-cover"
                   />
                 </div>
