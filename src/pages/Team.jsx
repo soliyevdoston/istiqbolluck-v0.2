@@ -69,63 +69,86 @@ export default function Team() {
   return (
     <div className="bg-white dark:bg-[#050505] transition-colors min-h-screen font-sans overflow-x-hidden pt-20">
       {/* --- 1. HERO SECTION --- */}
-      <section className="relative min-h-screen md:h-screen w-full flex flex-col md:flex-row bg-[#f5f5f5] dark:bg-[#080808] overflow-hidden text-left">
-        <div className="absolute top-[-10%] right-[-10%] w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-[#39B54A]/10 blur-[100px] rounded-full z-0" />
+      {/* --- 1. HERO SECTION (Director Spotlight) --- */}
+      <section className="relative min-h-[calc(100vh-5rem)] w-full flex items-center justify-center bg-[#f5f5f5] dark:bg-[#080808] overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#39B54A]/5 blur-[120px] rounded-full" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#39B54A]/5 blur-[120px] rounded-full" />
 
-        <div className="relative flex-1 w-full md:w-1/2 order-1 md:order-2 flex items-center justify-center p-8 md:p-16 z-10">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="relative w-full max-w-[450px] aspect-[4/5]"
-          >
-            {/* Rasm URL'ni t.team_page.director.img dan oladi */}
-            <img
-              src={t.team_page.director.img}
-              alt="Director"
-              className="h-full w-full object-cover rounded-[2.5rem] md:rounded-[4rem] shadow-2xl border-4 border-white dark:border-zinc-800 z-10 relative"
-            />
-          </motion.div>
-        </div>
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
 
-        <div className="relative flex-1 w-full md:w-1/2 order-2 md:order-1 flex flex-col justify-center px-8 md:px-16 lg:px-24 pb-12 z-30">
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-          >
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[110px] font-black italic uppercase tracking-tighter dark:text-white leading-[0.8] mb-2">
-              {t.team_page.hero_title1} <br />
-              <span className="text-[#39B54A]">{t.team_page.hero_title2}</span>
-            </h1>
-            <div className="w-20 h-1 bg-[#39B54A] mt-4" />
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="max-w-xl mt-10"
-          >
-            <span className="text-[#39B54A] font-black uppercase tracking-[0.3em] text-[10px] md:text-xs block mb-4">
-              {t.team_page.dir_label}
-            </span>
-            <h2 className="text-3xl md:text-5xl font-black dark:text-white uppercase mb-4 tracking-tight leading-tight">
-              {t.team_page.director.name}
-            </h2>
-            <p className="text-zinc-600 dark:text-zinc-400 italic text-sm md:text-xl mb-10 leading-relaxed border-l-4 border-[#39B54A]/30 pl-6">
-              “{t.team_page.director.quote}”
-            </p>
-            <button
-              onClick={() => setSelected(t.team_page.director)}
-              className="group flex items-center gap-5"
+          {/* Director Card - Featured */}
+          <div className="flex flex-col md:flex-row items-center gap-10 md:gap-20 mt-10 md:mt-20">
+            {/* Image */}
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="w-full md:w-5/12"
             >
-              <span className="text-xs md:text-sm font-black uppercase tracking-[0.2em] dark:text-white border-b-2 border-[#39B54A] pb-1 group-hover:text-[#39B54A] transition-colors">
-                {t.team_page.more_info}
-              </span>
-              <div className="w-10 h-10 md:w-14 md:h-14 bg-[#39B54A] rounded-full flex items-center justify-center text-white group-hover:scale-110 transition-all shadow-lg">
-                <ArrowRight size={22} />
+              <div className="relative aspect-[3/4] rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white dark:border-zinc-800">
+                <img
+                  src={t.team_page.director.img}
+                  alt="Director"
+                  className="w-full h-full object-cover select-none"
+                />
+                {/* Decorative Frame */}
+                <div className="absolute inset-4 border border-white/20 rounded-[2.5rem]" />
               </div>
-            </button>
-          </motion.div>
+            </motion.div>
+
+            {/* Info */}
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="w-full md:w-7/12 text-left"
+            >
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-[2px] bg-[#39B54A]" />
+                <span className="text-[#39B54A] font-black uppercase tracking-[0.2em] text-xs">
+                  {t.team_page.dir_label}
+                </span>
+              </div>
+
+              <h2 className="text-4xl md:text-6xl lg:text-7xl font-black dark:text-white uppercase leading-[0.9] mb-8">
+                {t.team_page.director.name.split(" ").map((word, i) => (
+                  <span key={i} className="block">
+                    {word}
+                  </span>
+                ))}
+              </h2>
+
+              <p className="text-xl md:text-2xl text-zinc-600 dark:text-zinc-400 font-serif italic mb-10 leading-relaxed border-l-4 border-[#39B54A] pl-6 py-2">
+                "{t.team_page.director.quote}"
+              </p>
+
+              <div className="grid grid-cols-2 gap-8 mb-10">
+                <div>
+                  <span className="block text-xs uppercase text-zinc-400 font-bold tracking-wider mb-1">
+                    {t.team_page.exp_label}
+                  </span>
+                  <span className="text-3xl font-black dark:text-white">
+                    {t.team_page.director.experience} {t.team_page.years}
+                  </span>
+                </div>
+                <div>
+                  <span className="block text-xs uppercase text-zinc-400 font-bold tracking-wider mb-1">
+                    {t.team_page.achievements_label}
+                  </span>
+                  <span className="text-3xl font-black dark:text-white">
+                    Top #1
+                  </span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setSelected(t.team_page.director)}
+                className="px-8 py-4 bg-black dark:bg-white text-white dark:text-black rounded-full font-black uppercase text-xs tracking-[0.2em] hover:bg-[#39B54A] dark:hover:bg-[#39B54A] hover:text-white transition-all shadow-xl"
+              >
+                {t.team_page.more_info}
+              </button>
+            </motion.div>
+          </div>
         </div>
       </section>
 
