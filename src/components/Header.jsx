@@ -241,10 +241,16 @@ export default function Header() {
                 </div>
 
                 <div className="flex justify-center gap-5 pt-1">
-                  {[Instagram, Send, Youtube].map((Icon, i) => (
+                  {[
+                    { Icon: Instagram, link: t.socials?.instagram },
+                    { Icon: Send, link: t.socials?.telegram },
+                    { Icon: Youtube, link: t.socials?.youtube },
+                  ].map(({ Icon, link }, i) => (
                     <a
                       key={i}
-                      href="#"
+                      href={link}
+                      target="_blank"
+                      rel="noreferrer"
                       className="w-10 h-10 flex items-center justify-center rounded-full bg-zinc-50 dark:bg-zinc-900 text-zinc-400 hover:text-[#39B54A] border border-zinc-100 dark:border-zinc-800 transition-colors"
                     >
                       <Icon size={18} />

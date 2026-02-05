@@ -116,6 +116,11 @@ const commonAssets = {
       t11: "/assets/NodiraAliyeva.jpg",
     },
   },
+  socials: {
+    telegram: "https://t.me/ISTIQBOL_LUCK_NTM",
+    instagram: "https://instagram.com/istiqbol_luck_ntm2020",
+    youtube: "https://youtube.com/@ISTIQBOL_LUCK_NTM",
+  },
 };
 
 const createTranslation = (texts) => ({
@@ -162,6 +167,7 @@ const createTranslation = (texts) => ({
       img: commonAssets.team.staff_imgs[t.id],
     })),
   },
+  socials: commonAssets.socials,
 });
 
 // --- 3. HAR BIR TIL UCHUN MATNLAR ---
@@ -176,7 +182,7 @@ const uzTexts = {
   menu: "Menyu",
   contact: "Aloqa",
   theme: "Mavzu",
-  phone: "+998 90 123 45 67",
+  phone: "+998 91 127 12 22",
   back: "Orqaga",
   not_found: "Maqola topilmadi",
   close: "Yopish",
@@ -597,7 +603,7 @@ const uzKrTexts = {
   menu: "Меню",
   contact: "Алоқа",
   theme: "Мавзу",
-  phone: "+998 90 123 45 67",
+  phone: "+998 91 127 12 22",
   back: "Орқага",
   not_found: "Мақола топилмади",
   close: "Ёпиш",
@@ -986,7 +992,7 @@ const ruTexts = {
   menu: "Меню",
   contact: "Контакты",
   theme: "Тема",
-  phone: "+998 90 123 45 67",
+  phone: "+998 91 127 12 22",
   back: "Назад",
   not_found: "Статья не найдена",
   close: "Закрыть",
@@ -1307,7 +1313,7 @@ const enTexts = {
   menu: "Menu",
   contact: "Contact",
   theme: "Theme",
-  phone: "+998 90 123 45 67",
+  phone: "+998 91 127 12 22",
   back: "Back",
   not_found: "Article not found",
   close: "Close",

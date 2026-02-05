@@ -104,10 +104,16 @@ export default function Footer() {
               {t.networks}
             </h4>
             <div className="flex gap-3 mb-6">
-              {[Instagram, Send, Youtube].map((Icon, i) => (
+              {[
+                { Icon: Instagram, link: t.socials?.instagram },
+                { Icon: Send, link: t.socials?.telegram },
+                { Icon: Youtube, link: t.socials?.youtube },
+              ].map(({ Icon, link }, i) => (
                 <a
                   key={i}
-                  href="#"
+                  href={link}
+                  target="_blank"
+                  rel="noreferrer"
                   className="w-9 h-9 flex items-center justify-center rounded-full border border-zinc-100 dark:border-zinc-800 text-zinc-600 dark:text-white hover:border-[#39B54A] hover:text-[#39B54A] transition-all"
                 >
                   <Icon size={16} />
