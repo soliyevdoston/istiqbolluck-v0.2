@@ -66,7 +66,7 @@ const DraggableMarquee = ({ items, baseVelocity = -0.4 }) => {
                   src={item}
                   alt="Gallery"
                   draggable="false"
-                  loading="lazy"
+                  loading={outerIdx === 0 ? "eager" : "lazy"}
                   className="h-[200px] md:h-[300px] w-[280px] md:w-[450px] object-cover rounded-[2rem] pointer-events-none shadow-lg select-none"
                 />
               </div>
