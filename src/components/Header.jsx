@@ -11,7 +11,6 @@ import {
   Youtube,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import ThemeToggle from "./ThemeToggle";
 import { useLanguage } from "../context/LanguageContext"; // Context'ni chaqiramiz
 
 export default function Header() {
@@ -140,9 +139,7 @@ export default function Header() {
             </AnimatePresence>
           </div>
 
-          <div className="hidden lg:block border-l border-zinc-100 dark:border-zinc-800 pl-2">
-            <ThemeToggle />
-          </div>
+
 
           {/* TELEFON */}
           <a
@@ -233,12 +230,7 @@ export default function Header() {
                   </div>
                 </a>
 
-                <div className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800">
-                  <span className="text-[10px] font-bold text-zinc-500 uppercase">
-                    {t.theme}
-                  </span>
-                  <ThemeToggle />
-                </div>
+
 
                 <div className="flex justify-center gap-5 pt-1">
                   {[

@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bot, X, Send } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext"; // Til contextini import qilish
+import ThemeToggle from "./ThemeToggle"; // ThemeToggle import
+
 
 export default function AIChat() {
   const { t } = useLanguage(); // Hozirgi til tarjimalari (translations.js dan)
@@ -147,6 +149,9 @@ export default function AIChat() {
       >
         {isOpen ? <X size={28} /> : <Bot size={28} />}
       </motion.button>
+      
+      {/* Dark Mode Toggle (Chatbot tagida) */}
+      <ThemeToggle />
     </div>
   );
 }
