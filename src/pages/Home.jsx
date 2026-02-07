@@ -31,12 +31,13 @@ const wrap = (min, max, v) =>
 
 const DraggableMarquee = ({ items, baseVelocity = -0.4 }) => {
   const baseX = useMotionValue(0);
-  const x = useTransform(baseX, (v) => `${wrap(-20, -40, v)}%`); // Match PremiumInfiniteSlider wrap
+  // MANTIQ O'ZGARDi: -25 dan -50 gacha wrap qilish sakrashni yo'qotadi
+  const x = useTransform(baseX, (v) => `${wrap(-25, -50, v)}%`); 
   const isDragging = useRef(false);
 
   useAnimationFrame((t, delta) => {
     if (!isDragging.current) {
-      let moveBy = baseVelocity * (delta / 1000); // Standardize velocity calc
+      let moveBy = baseVelocity * (delta / 1000); 
       baseX.set(baseX.get() + moveBy);
     }
   });
@@ -48,16 +49,14 @@ const DraggableMarquee = ({ items, baseVelocity = -0.4 }) => {
         style={{ x }}
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.05} // Match PremiumInfiniteSlider
+        dragElastic={0.05} 
         onDragStart={() => (isDragging.current = true)}
         onDragEnd={() => (isDragging.current = false)}
         onDrag={(e, info) => {
           const currentX = baseX.get();
-          // Match PremiumInfiniteSlider drag sensitivity logic
           baseX.set(currentX + (info.delta.x / window.innerWidth) * 20);
         }}
       >
-        {/* Adopt the multiple duplication strategy of PremiumInfiniteSlider */}
         {[...Array(4)].map((_, outerIdx) => (
           <React.Fragment key={outerIdx}>
             {items.map((item, i) => (
@@ -80,20 +79,17 @@ const DraggableMarquee = ({ items, baseVelocity = -0.4 }) => {
 
 const PremiumInfiniteSlider = ({
   items,
-  baseVelocity = -0.5, // Tezlikni biroz oshirdik, chunki prujinasiz sekin ko'rinishi mumkin
+  baseVelocity = -0.5, 
   isText = false,
 }) => {
   const baseX = useMotionValue(0);
-
-  // useSpring-ni olib tashladik, chunki u tezlikni o'zgartirib yuboradi.
-  // To'g'ridan-to'g'ri baseX-dan transform qilamiz.
-  const x = useTransform(baseX, (v) => `${wrap(-20, -40, v)}%`);
+  // MANTIQ O'ZGARDi: -25 dan -50 gacha wrap qilish sakrashni yo'qotadi
+  const x = useTransform(baseX, (v) => `${wrap(-25, -50, v)}%`);
 
   const isDragging = useRef(false);
 
   useAnimationFrame((t, delta) => {
     if (!isDragging.current) {
-      // Bir maromda siljish formulasi
       let moveBy = baseVelocity * (delta / 1000);
       baseX.set(baseX.get() + moveBy);
     }
@@ -103,7 +99,7 @@ const PremiumInfiniteSlider = ({
     <div className="overflow-hidden flex whitespace-nowrap py-2 w-full cursor-grab active:cursor-grabbing select-none">
       <motion.div
         className="flex gap-6 md:gap-16 items-center will-change-transform"
-        style={{ x }} // Endi x doimiy bir xil tezlikda o'zgaradi
+        style={{ x }} 
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.05}
@@ -111,11 +107,9 @@ const PremiumInfiniteSlider = ({
         onDragEnd={() => (isDragging.current = false)}
         onDrag={(e, info) => {
           const currentX = baseX.get();
-          // Drag sezuvchanligi
           baseX.set(currentX + (info.delta.x / window.innerWidth) * 20);
         }}
       >
-        {/* Kontentni 4 marta takrorlash yetarli (perfomance uchun) */}
         {[...Array(4)].map((_, outerIdx) => (
           <React.Fragment key={outerIdx}>
             {items.map((item, i) => (
@@ -201,7 +195,7 @@ const TextFeedbackCard = ({ feedback }) => (
         <div className="w-10 h-10 md:w-12 md:h-12 bg-[#39B54A] rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-[#39B54A]/20">
           {feedback.name[0]}
         </div>
-        <div>
+        <div className="text-left">
           <p className="font-black text-xs md:text-sm uppercase tracking-tight dark:text-white">
             {feedback.name}
           </p>
@@ -274,7 +268,7 @@ const FAQItem = ({ faq }) => {
 // --- ASOSIY HOME KOMPONENTI ---
 
 export default function Home() {
-  const { t } = useLanguage(); // Tarjimalarni olish
+  const { t } = useLanguage(); 
   const consultRef = useRef(null);
 
   const [status, setStatus] = useState("idle");
@@ -337,7 +331,7 @@ export default function Home() {
       <section className="relative h-screen w-full flex flex-col justify-center items-center overflow-hidden bg-black">
         <div className="absolute inset-0 z-0">
           <img
-            src={t.home_page.hero_bg} // <--- ENDI TRANSLATIONS.JS DAGI RASMNI OLADI
+            src={t.home_page.hero_bg} 
             alt="School"
             className="w-full h-full object-cover"
           />
@@ -427,7 +421,7 @@ export default function Home() {
                 {t.home_page.adv_title}
               </p>
             </div>
-            <p className="max-w-xs text-zinc-500 dark:text-zinc-400 border-l-2 border-[#39B54A] pl-5 italic font-medium text-[11px] md:text-base leading-relaxed">
+            <p className="max-w-xs text-zinc-500 dark:text-zinc-400 border-l-2 border-[#39B54A] pl-5 italic font-medium text-[11px] md:text-base leading-relaxed text-left">
               {t.home_page.adv_desc}
             </p>
           </div>
@@ -494,9 +488,9 @@ export default function Home() {
 
       {/* 4. MAKTAB HAYOTI SECTION */}
       <section className="py-16 md:py-32 bg-white dark:bg-[#050505] overflow-hidden transition-colors">
-        <div className="w-full">
+        <div className="w-full text-left">
           <div className="max-w-7xl mx-auto px-6 mb-12 md:mb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-12 text-left">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-12">
               <h2 className="text-3xl md:text-6xl font-black dark:text-white uppercase tracking-tighter leading-none shrink-0">
                 {t.home_page.life_title1}{" "}
                 <span className="text-[#39B54A]">
@@ -514,11 +508,11 @@ export default function Home() {
 
           <div className="space-y-4 md:space-y-8">
             <DraggableMarquee
-              baseVelocity={-1}
+              baseVelocity={-0.4}
               items={t.home_page.life_gallery1}
             />
             <DraggableMarquee
-              baseVelocity={1}
+              baseVelocity={0.4}
               items={t.home_page.life_gallery2}
             />
           </div>
@@ -527,9 +521,9 @@ export default function Home() {
 
       {/* 5. FEEDBACK SECTION */}
       <section className="py-16 md:py-32 bg-white dark:bg-[#050505] overflow-hidden transition-colors">
-        <div className="w-full">
+        <div className="w-full text-left">
           <div className="max-w-7xl mx-auto px-6 mb-12 md:mb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-12 text-left">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-12">
               <div>
                 <h4 className="text-[#39B54A] font-bold tracking-[0.3em] uppercase text-[10px] md:text-xs mb-3 italic">
                   {t.home_page.feed_subtitle}
@@ -580,9 +574,9 @@ export default function Home() {
 
       {/* 6. UNIVERSITIES SECTION */}
       <section className="py-16 md:py-32 bg-white dark:bg-[#050505] overflow-hidden transition-colors border-y border-zinc-50 dark:border-zinc-900">
-        <div className="w-full">
+        <div className="w-full text-left">
           <div className="max-w-7xl mx-auto px-6 mb-12 md:mb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-12 text-left">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-12">
               <div>
                 <h4 className="text-[#39B54A] font-bold tracking-[0.3em] uppercase text-[10px] md:text-xs mb-3 italic">
                   {t.home_page.uni_subtitle}
@@ -620,9 +614,9 @@ export default function Home() {
       {/* 7. KONSULTATSIYA SECTION */}
       <section
         ref={consultRef}
-        className="py-16 md:py-32 max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-8 md:gap-12 items-start"
+        className="py-16 md:py-32 max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-8 md:gap-12 items-start text-left"
       >
-        <div className="bg-[#e2dfdf] dark:bg-[#0c0c0c] p-8 md:p-12 rounded-[2.5rem] relative overflow-hidden border border-transparent dark:border-zinc-800 shadow-sm text-left h-full">
+        <div className="bg-[#e2dfdf] dark:bg-[#0c0c0c] p-8 md:p-12 rounded-[2.5rem] relative overflow-hidden border border-transparent dark:border-zinc-800 shadow-sm h-full">
           <AnimatePresence>
             {status === "success" && (
               <motion.div
@@ -634,7 +628,7 @@ export default function Home() {
                 <h3 className="text-2xl font-black uppercase italic tracking-tight">
                   {t.home_page.form_success_title}
                 </h3>
-                <p className="text-sm mt-2 opacity-90">
+                <p className="text-sm mt-2 opacity-90 text-center">
                   {t.home_page.form_success_desc}
                 </p>
               </motion.div>
@@ -642,7 +636,7 @@ export default function Home() {
           </AnimatePresence>
 
           <h2 className="text-3xl md:text-6xl font-black dark:text-white uppercase leading-[0.9] mb-8 tracking-tighter">
-            {t.home_page.form_title1} <span>{t.home_page.form_title2}</span>
+            {t.home_page.form_title1} <span className="text-[#39B54A]">{t.home_page.form_title2}</span>
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -705,7 +699,7 @@ export default function Home() {
               <h3 className="text-xs md:text-sm font-black dark:text-white uppercase leading-none tracking-tight">
                 {t.home_page.map_branch}
               </h3>
-              <p className="text-[10px] md:text-[11px] text-zinc-500 font-bold uppercase mt-1 tracking-wider">
+              <p className="text-[10px] md:text-[11px] text-zinc-500 font-bold uppercase mt-1 tracking-wider text-left">
                 {t.home_page.map_address}
               </p>
               <a
@@ -723,7 +717,7 @@ export default function Home() {
       </section>
 
       {/* 8. FAQ SECTION */}
-      <section className="py-16 md:py-32 bg-white dark:bg-[#050505] transition-colors">
+      <section className="py-16 md:py-32 bg-white dark:bg-[#050505] transition-colors text-left">
         <div className="max-w-7xl mx-auto px-6 text-left">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-12 mb-12 md:mb-20">
             <div>
@@ -732,7 +726,7 @@ export default function Home() {
               </h4>
               <h2 className="text-3xl md:text-6xl font-black dark:text-white uppercase tracking-tighter leading-none">
                 {t.home_page.faq_title1} <br className="hidden md:block" />
-                <span>{t.home_page.faq_title2}</span>
+                <span className="dark:text-white">{t.home_page.faq_title2}</span>
               </h2>
             </div>
             <div className="flex items-stretch gap-4 md:gap-6 max-w-md">
