@@ -1,34 +1,39 @@
+import React, { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import AIChat from "./components/AIChat";
-import Home from "./pages/Home";
-import Dtm from "./pages/Dtm";
-import Team from "./pages/Team";
-import Blog from "./pages/Blog";
-import SchoolLife from "./pages/SchoolLife";
-import BlogDetail from "./pages/BlogDetail";
 import ScrollToTop from "./components/ScrollToTop";
-import SchoolDtm from "./pages/SchoolDtm";
+import Loading from "./components/Loading";
 import { LanguageProvider } from "./context/LanguageContext";
+
+// Lazy loading pages for performance
+const Home = lazy(() => import("./pages/Home"));
+const Dtm = lazy(() => import("./pages/Dtm"));
+const SchoolDtm = lazy(() => import("./pages/SchoolDtm"));
+const Team = lazy(() => import("./pages/Team"));
+const Blog = lazy(() => import("./pages/Blog"));
+const SchoolLife = lazy(() => import("./pages/SchoolLife"));
+const BlogDetail = lazy(() => import("./pages/BlogDetail"));
 
 function App() {
   return (
-    // 1. LanguageProvider barcha komponentlarni o'rab turishi shart
     <LanguageProvider>
       <Router>
         <ScrollToTop />
         <Header />
 
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/dtm" element={<Dtm />} />
-          <Route path="/schooldtm" element={<SchoolDtm />} />
-          <Route path="/team" element={<Team />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/life" element={<SchoolLife />} />
-          <Route path="/blog/:id" element={<BlogDetail />} />
-        </Routes>
+        <Suspense fallback={<Loading />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/dtm" element={<Dtm />} />
+            <Route path="/schooldtm" element={<SchoolDtm />} />
+            <Route path="/team" element={<Team />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/life" element={<SchoolLife />} />
+            <Route path="/blog/:id" element={<BlogDetail />} />
+          </Routes>
+        </Suspense>
 
         <AIChat />
         <Footer />
