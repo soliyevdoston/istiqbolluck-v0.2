@@ -12,6 +12,7 @@ import {
 } from "framer-motion";
 import {
   Play,
+  Instagram,
   Loader2,
   CheckCircle,
   ChevronDown,
@@ -146,6 +147,9 @@ const PremiumInfiniteSlider = ({
 };
 
 const VideoFeedbackCard = ({ feedback, isPlaying, onPlay }) => {
+  const instagramUrl =
+    feedback.instagramUrl || "https://instagram.com/istiqbol_luck_ntm2020";
+
   return (
     <div className="flex-shrink-0 lg:shrink w-[82vw] sm:w-[45vw] lg:w-full snap-center px-2 lg:px-0 h-full">
       <div className="relative h-[450px] md:h-[520px] w-full rounded-[2.5rem] md:rounded-[3rem] overflow-hidden bg-black shadow-xl group">
@@ -156,6 +160,16 @@ const VideoFeedbackCard = ({ feedback, isPlaying, onPlay }) => {
               alt={feedback.name}
               className="w-full h-full object-cover opacity-50 grayscale-0 transition-all duration-700"
             />
+            <a
+              href={instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              aria-label={`${feedback.name} Instagram video`}
+              className="absolute top-5 left-5 z-20 w-10 h-10 rounded-full bg-black/45 backdrop-blur-sm border border-white/25 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[#39B54A] hover:border-[#39B54A]"
+            >
+              <Instagram size={16} />
+            </a>
             <div
               className="absolute inset-0 flex items-center justify-center cursor-pointer"
               onClick={onPlay}
