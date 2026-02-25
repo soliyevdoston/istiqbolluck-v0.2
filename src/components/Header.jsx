@@ -2,11 +2,66 @@ import React, { useState, useEffect, useRef } from "react";
 import { NavLink, Link } from "react-router-dom";
 import {
   Phone,
-  Globe,
   ChevronDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "../context/LanguageContext"; // Context'ni chaqiramiz
+
+const FlagIcon = ({ code, className = "" }) => {
+  if (code === "RU") {
+    return (
+      <svg viewBox="0 0 24 16" className={className} aria-hidden="true">
+        <rect width="24" height="16" fill="#FFFFFF" />
+        <rect y="5.33" width="24" height="5.34" fill="#224C9D" />
+        <rect y="10.67" width="24" height="5.33" fill="#D52B1E" />
+      </svg>
+    );
+  }
+
+  if (code === "EN") {
+    return (
+      <svg viewBox="0 0 24 16" className={className} aria-hidden="true">
+        <rect width="24" height="16" fill="#1F4DA1" />
+        <path d="M0 0 L9 6 L7.2 6 L0 1.2 Z" fill="#FFFFFF" />
+        <path d="M24 0 L15 6 L16.8 6 L24 1.2 Z" fill="#FFFFFF" />
+        <path d="M0 16 L9 10 L7.2 10 L0 14.8 Z" fill="#FFFFFF" />
+        <path d="M24 16 L15 10 L16.8 10 L24 14.8 Z" fill="#FFFFFF" />
+        <path d="M0 0 L8.2 5.5 L7 5.5 L0 0.8 Z" fill="#D9202A" />
+        <path d="M24 0 L15.8 5.5 L17 5.5 L24 0.8 Z" fill="#D9202A" />
+        <path d="M0 16 L8.2 10.5 L7 10.5 L0 15.2 Z" fill="#D9202A" />
+        <path d="M24 16 L15.8 10.5 L17 10.5 L24 15.2 Z" fill="#D9202A" />
+        <rect x="9.5" width="5" height="16" fill="#FFFFFF" />
+        <rect y="5.5" width="24" height="5" fill="#FFFFFF" />
+        <rect x="10.5" width="3" height="16" fill="#D9202A" />
+        <rect y="6.5" width="24" height="3" fill="#D9202A" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 16" className={className} aria-hidden="true">
+      <rect width="24" height="16" fill="#1EB4E8" />
+      <rect y="5" width="24" height="0.8" fill="#D81E32" />
+      <rect y="5.8" width="24" height="4.4" fill="#FFFFFF" />
+      <rect y="10.2" width="24" height="0.8" fill="#D81E32" />
+      <rect y="11" width="24" height="5" fill="#1FA650" />
+      <circle cx="4.1" cy="3.3" r="2.05" fill="#FFFFFF" />
+      <circle cx="4.7" cy="3.3" r="1.7" fill="#1EB4E8" />
+      <circle cx="7.4" cy="1.9" r="0.28" fill="#FFFFFF" />
+      <circle cx="8.5" cy="1.6" r="0.28" fill="#FFFFFF" />
+      <circle cx="9.6" cy="1.9" r="0.28" fill="#FFFFFF" />
+      <circle cx="7.9" cy="2.9" r="0.28" fill="#FFFFFF" />
+      <circle cx="9" cy="2.6" r="0.28" fill="#FFFFFF" />
+      <circle cx="10.1" cy="2.9" r="0.28" fill="#FFFFFF" />
+      <circle cx="7.4" cy="3.9" r="0.28" fill="#FFFFFF" />
+      <circle cx="8.5" cy="3.6" r="0.28" fill="#FFFFFF" />
+      <circle cx="9.6" cy="3.9" r="0.28" fill="#FFFFFF" />
+      <circle cx="7.9" cy="4.9" r="0.28" fill="#FFFFFF" />
+      <circle cx="9" cy="4.6" r="0.28" fill="#FFFFFF" />
+      <circle cx="10.1" cy="4.9" r="0.28" fill="#FFFFFF" />
+    </svg>
+  );
+};
 
 export default function Header() {
   const { lang, changeLanguage, t } = useLanguage(); // Til tizimi
@@ -15,10 +70,10 @@ export default function Header() {
 
   // Tillar ro'yxati
   const languages = [
-    { code: "UZ", label: "O'zbekcha", flag: "🇺🇿" },
-    { code: "UZ_KR", label: "Ўзбекча", flag: "🇺🇿" },
-    { code: "RU", label: "Русский", flag: "🇷🇺" },
-    { code: "EN", label: "English", flag: "🇬🇧" },
+    { code: "UZ", label: "O'zbekcha", flagCode: "UZ" },
+    { code: "UZ_KR", label: "Ўзбекча", flagCode: "UZ" },
+    { code: "RU", label: "Русский", flagCode: "RU" },
+    { code: "EN", label: "English", flagCode: "EN" },
   ];
 
   if (!t) return null;
@@ -33,7 +88,8 @@ export default function Header() {
   ];
 
   // Current language flag finder
-  const currentFlag = languages.find(l => l.code === lang)?.flag || "🇺🇿";
+  const currentLanguage =
+    languages.find((l) => l.code === lang) || languages[0];
 
   // Tashqarini bossa til menyusini yopish
   useEffect(() => {
@@ -97,7 +153,10 @@ export default function Header() {
               onClick={() => setIsLangOpen(!isLangOpen)}
               className="flex items-center gap-1.5 py-1 px-2 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
             >
-              <span className="text-lg leading-none">{currentFlag}</span>
+              <FlagIcon
+                code={currentLanguage.flagCode}
+                className="w-[18px] h-3.5 rounded-[2px] shadow-sm"
+              />
               <span className="text-[10px] md:text-[11px] font-black text-zinc-800 dark:text-zinc-200 uppercase tracking-widest">
                 {lang === "UZ_KR" ? "ЎЗ" : lang}
               </span>
@@ -126,7 +185,10 @@ export default function Header() {
                         ${lang === item.code ? "text-[#39B54A] bg-[#39B54A]/5" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900"}
                       `}
                     >
-                      <span className="text-base">{item.flag}</span>
+                      <FlagIcon
+                        code={item.flagCode}
+                        className="w-[18px] h-3.5 rounded-[2px] shadow-sm"
+                      />
                       {item.label}
                     </button>
                   ))}
