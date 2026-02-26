@@ -21,6 +21,8 @@ import {
   MapPin,
   ArrowRight,
   ArrowUpRight,
+  PhoneCall,
+  ShieldCheck,
 } from "lucide-react";
 
 // Context import (Sizning tizimingiz)
@@ -542,6 +544,18 @@ const CONVERSION_COPY = {
       desc: "Bepul konsultatsiya oling",
       cta: "Hozir yozilish",
     },
+    quickActions: {
+      badge: "Tez aloqa",
+      call: "Qo'ng'iroq qilish",
+    },
+    optional: {
+      show: "Qo'shimcha savollar (ixtiyoriy)",
+      hide: "Qo'shimcha savollarni yopish",
+    },
+    trust: {
+      privacy: "Raqamingiz faqat qabul bo'yicha aloqaga ishlatiladi.",
+      speed: "Arizalar botga darhol yuboriladi.",
+    },
   },
   UZ_KR: {
     nudge: {
@@ -571,6 +585,18 @@ const CONVERSION_COPY = {
       title: "Қабул очиқ",
       desc: "Бепул консультация олинг",
       cta: "Ҳозир ёзилиш",
+    },
+    quickActions: {
+      badge: "Тез алоқа",
+      call: "Қўнғироқ қилиш",
+    },
+    optional: {
+      show: "Қўшимча саволлар (ихтиёрий)",
+      hide: "Қўшимча саволларни ёпиш",
+    },
+    trust: {
+      privacy: "Рақамингиз фақат қабул бўйича алоқа учун ишлатилади.",
+      speed: "Аризалар ботга дарҳол юборилади.",
     },
   },
   RU: {
@@ -602,6 +628,18 @@ const CONVERSION_COPY = {
       desc: "Получите бесплатную консультацию",
       cta: "Записаться сейчас",
     },
+    quickActions: {
+      badge: "Быстрая связь",
+      call: "Позвонить",
+    },
+    optional: {
+      show: "Дополнительные вопросы (необязательно)",
+      hide: "Скрыть дополнительные вопросы",
+    },
+    trust: {
+      privacy: "Номер используется только для связи по приему.",
+      speed: "Заявка сразу отправляется в бот.",
+    },
   },
   EN: {
     nudge: {
@@ -627,6 +665,18 @@ const CONVERSION_COPY = {
       title: "Admissions open",
       desc: "Get a free consultation",
       cta: "Apply now",
+    },
+    quickActions: {
+      badge: "Fast contact",
+      call: "Call now",
+    },
+    optional: {
+      show: "Additional questions (optional)",
+      hide: "Hide additional questions",
+    },
+    trust: {
+      privacy: "Your phone is used only for admission follow-up.",
+      speed: "Requests are sent to the bot instantly.",
     },
   },
 };
@@ -1000,6 +1050,7 @@ export default function Home() {
   const [childAge, setChildAge] = useState("");
   const [contactTime, setContactTime] = useState("");
   const [childInterest, setChildInterest] = useState("");
+  const [showOptionalFields, setShowOptionalFields] = useState(false);
   const [playingVideoIndex, setPlayingVideoIndex] = useState(null);
   const [countdown, setCountdown] = useState(() =>
     getCountdownParts(ADMISSION_DEADLINE_ISO),
@@ -1013,6 +1064,11 @@ export default function Home() {
     amount: 0.2,
   });
   const isConsultInView = useInView(consultRef, { amount: 0.25 });
+  const contactPhoneRaw = import.meta.env.VITE_CONTACT_PHONE || "";
+  const contactPhoneDigits = contactPhoneRaw.replace(/[^\d+]/g, "");
+  const contactPhoneLink = contactPhoneDigits
+    ? `tel:${contactPhoneDigits}`
+    : null;
 
   const normalizePhone = (value) => value.replace(/\D/g, "");
 
@@ -1030,6 +1086,18 @@ export default function Home() {
     consultRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const handleQuickChannelClick = (channel) => {
+    trackEvent("consult_channel_click", { lang, channel });
+  };
+
+  const toggleOptionalFields = () => {
+    setShowOptionalFields((prev) => {
+      const next = !prev;
+      trackEvent("consult_optional_toggle", { lang, isOpen: next });
+      return next;
+    });
+  };
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCountdown(getCountdownParts(ADMISSION_DEADLINE_ISO));
@@ -1043,6 +1111,7 @@ export default function Home() {
     setQuizIndex(0);
     setQuizAnswers([]);
     setQuizResult(null);
+    setShowOptionalFields(false);
   }, [lang]);
 
   useEffect(() => {
@@ -1812,6 +1881,22 @@ export default function Home() {
             </div>
           </div>
 
+          {contactPhoneLink && (
+            <div className="mb-5">
+              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500 mb-2">
+                {conversion.quickActions.badge}
+              </p>
+              <a
+                href={contactPhoneLink}
+                onClick={() => handleQuickChannelClick("call")}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-black text-zinc-900 dark:text-white px-4 py-3 text-[11px] font-black uppercase tracking-[0.12em] hover:border-[#39B54A] hover:text-[#39B54A] transition-colors"
+              >
+                <PhoneCall size={15} />
+                <span>{conversion.quickActions.call}</span>
+              </a>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1">
               <label
@@ -1828,66 +1913,6 @@ export default function Home() {
                 autoComplete="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full p-4 md:p-5 rounded-2xl bg-white dark:bg-black dark:text-white border-2 border-transparent focus:border-[#39B54A] focus-visible:ring-2 focus-visible:ring-[#39B54A] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-black transition-all font-bold text-sm shadow-sm"
-              />
-            </div>
-            <div className="space-y-1">
-              <label
-                htmlFor="consult-age"
-                className="text-xs font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-300 ml-2"
-              >
-                {conversion.fields.ageLabel}
-              </label>
-              <select
-                id="consult-age"
-                value={childAge}
-                onChange={(e) => setChildAge(e.target.value)}
-                className="w-full p-4 md:p-5 rounded-2xl bg-white dark:bg-black dark:text-white border-2 border-transparent focus:border-[#39B54A] focus-visible:ring-2 focus-visible:ring-[#39B54A] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-black transition-all font-bold text-sm shadow-sm"
-              >
-                <option value="">{conversion.fields.agePlaceholder}</option>
-                {conversion.fields.ageOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-1">
-              <label
-                htmlFor="consult-contact-time"
-                className="text-xs font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-300 ml-2"
-              >
-                {conversion.fields.timeLabel}
-              </label>
-              <select
-                id="consult-contact-time"
-                value={contactTime}
-                onChange={(e) => setContactTime(e.target.value)}
-                className="w-full p-4 md:p-5 rounded-2xl bg-white dark:bg-black dark:text-white border-2 border-transparent focus:border-[#39B54A] focus-visible:ring-2 focus-visible:ring-[#39B54A] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-black transition-all font-bold text-sm shadow-sm"
-              >
-                <option value="">{conversion.fields.timePlaceholder}</option>
-                {conversion.fields.timeOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-1">
-              <label
-                htmlFor="consult-interest"
-                className="text-xs font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-300 ml-2"
-              >
-                {conversion.fields.interestLabel}
-              </label>
-              <input
-                id="consult-interest"
-                type="text"
-                value={childInterest}
-                onChange={(e) => setChildInterest(e.target.value)}
-                placeholder={conversion.fields.interestPlaceholder}
                 className="w-full p-4 md:p-5 rounded-2xl bg-white dark:bg-black dark:text-white border-2 border-transparent focus:border-[#39B54A] focus-visible:ring-2 focus-visible:ring-[#39B54A] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-black transition-all font-bold text-sm shadow-sm"
               />
             </div>
@@ -1911,11 +1936,114 @@ export default function Home() {
                 className="w-full p-4 md:p-5 rounded-2xl bg-white dark:bg-black dark:text-white border-2 border-transparent focus:border-[#39B54A] focus-visible:ring-2 focus-visible:ring-[#39B54A] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-black transition-all font-bold text-sm shadow-sm"
               />
             </div>
+
+            <button
+              type="button"
+              onClick={toggleOptionalFields}
+              className="w-full inline-flex items-center justify-between rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white/80 dark:bg-black/80 px-4 py-3 text-[11px] font-black uppercase tracking-[0.12em] text-zinc-700 dark:text-zinc-300 hover:border-[#39B54A] transition-colors"
+            >
+              <span>
+                {showOptionalFields
+                  ? conversion.optional.hide
+                  : conversion.optional.show}
+              </span>
+              <ChevronDown
+                size={16}
+                className={`transition-transform ${
+                  showOptionalFields ? "rotate-180 text-[#39B54A]" : ""
+                }`}
+              />
+            </button>
+
+            <AnimatePresence initial={false}>
+              {showOptionalFields && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-4 overflow-hidden"
+                >
+                  <div className="space-y-1">
+                    <label
+                      htmlFor="consult-age"
+                      className="text-xs font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-300 ml-2"
+                    >
+                      {conversion.fields.ageLabel}
+                    </label>
+                    <select
+                      id="consult-age"
+                      value={childAge}
+                      onChange={(e) => setChildAge(e.target.value)}
+                      className="w-full p-4 md:p-5 rounded-2xl bg-white dark:bg-black dark:text-white border-2 border-transparent focus:border-[#39B54A] focus-visible:ring-2 focus-visible:ring-[#39B54A] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-black transition-all font-bold text-sm shadow-sm"
+                    >
+                      <option value="">{conversion.fields.agePlaceholder}</option>
+                      {conversion.fields.ageOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label
+                      htmlFor="consult-contact-time"
+                      className="text-xs font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-300 ml-2"
+                    >
+                      {conversion.fields.timeLabel}
+                    </label>
+                    <select
+                      id="consult-contact-time"
+                      value={contactTime}
+                      onChange={(e) => setContactTime(e.target.value)}
+                      className="w-full p-4 md:p-5 rounded-2xl bg-white dark:bg-black dark:text-white border-2 border-transparent focus:border-[#39B54A] focus-visible:ring-2 focus-visible:ring-[#39B54A] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-black transition-all font-bold text-sm shadow-sm"
+                    >
+                      <option value="">
+                        {conversion.fields.timePlaceholder}
+                      </option>
+                      {conversion.fields.timeOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label
+                      htmlFor="consult-interest"
+                      className="text-xs font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-300 ml-2"
+                    >
+                      {conversion.fields.interestLabel}
+                    </label>
+                    <input
+                      id="consult-interest"
+                      type="text"
+                      value={childInterest}
+                      onChange={(e) => setChildInterest(e.target.value)}
+                      placeholder={conversion.fields.interestPlaceholder}
+                      className="w-full p-4 md:p-5 rounded-2xl bg-white dark:bg-black dark:text-white border-2 border-transparent focus:border-[#39B54A] focus-visible:ring-2 focus-visible:ring-[#39B54A] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-black transition-all font-bold text-sm shadow-sm"
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="rounded-xl border border-[#39B54A]/25 bg-[#39B54A]/5 p-3 space-y-1">
+              <p className="text-[11px] text-zinc-700 dark:text-zinc-300 font-semibold flex items-center gap-2">
+                <ShieldCheck size={14} className="text-[#39B54A] shrink-0" />
+                {conversion.trust.privacy}
+              </p>
+              <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium">
+                {conversion.trust.speed}
+              </p>
+            </div>
+
             <button
               type="submit"
               disabled={status === "loading"}
               aria-busy={status === "loading"}
-              className="w-full py-4 md:py-5 bg-black dark:bg-[#39B54A] text-white font-black uppercase rounded-2xl text-xs md:text-sm tracking-[0.2em] transition-all flex justify-center items-center gap-2 mt-4"
+              className="w-full py-4 md:py-5 bg-black dark:bg-[#39B54A] text-white font-black uppercase rounded-2xl text-xs md:text-sm tracking-[0.2em] transition-all flex justify-center items-center gap-2 mt-2"
             >
               {status === "loading" ? (
                 <Loader2 className="animate-spin mx-auto" />
