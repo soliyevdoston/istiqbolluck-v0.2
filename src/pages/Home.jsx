@@ -1221,10 +1221,10 @@ export default function Home() {
             {t.home_page.advantages.map((adv, idx) => (
               <div
                 key={idx}
-                className={`p-5 md:p-12 rounded-[1.5rem] md:rounded-[2.5rem] bg-[#e2dfdf] dark:bg-[#0c0c0c] border border-transparent hover:border-[#39B54A]/30 transition-all group text-left flex flex-col justify-between ${idx === 2 ? "col-span-2 md:col-span-1" : "col-span-1"}`}
+                className={`p-5 md:p-10 rounded-[1.5rem] md:rounded-[2.2rem] bg-white/90 dark:bg-[#0c0c0c] border border-zinc-200 dark:border-zinc-800 hover:border-[#39B54A]/35 hover:shadow-xl transition-all group text-left flex flex-col justify-between ${idx === 2 ? "col-span-2 md:col-span-1" : "col-span-1"}`}
               >
                 <div>
-                  <span className="text-3xl md:text-6xl font-black italic opacity-20 group-hover:opacity-100 transition-opacity duration-500 text-[#39B54A]">
+                  <span className="inline-flex px-2.5 py-1 rounded-full text-[10px] md:text-xs font-black uppercase tracking-[0.16em] bg-[#39B54A]/10 text-[#39B54A] border border-[#39B54A]/20">
                     {adv.id}
                   </span>
                   <h3 className="text-sm md:text-2xl font-bold mt-4 md:mt-8 mb-2 md:mb-4 dark:text-white leading-tight uppercase italic tracking-tight">
