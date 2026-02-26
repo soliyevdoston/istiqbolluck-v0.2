@@ -512,6 +512,125 @@ const MARKETING_CONTENT = {
   },
 };
 
+const CONVERSION_COPY = {
+  UZ: {
+    nudge: {
+      badge: "Qabulga tayyorlanish",
+      title: "2 daqiqada ariza, 10 daqiqada aloqaga chiqamiz",
+      points: [
+        "Bepul konsultatsiya va farzandingizga mos tavsiya",
+        "Qabul bosqichlari va kerakli hujjatlar aniq tushuntiriladi",
+        "Sizga qulay vaqtda operatorimiz bog'lanadi",
+      ],
+    },
+    fields: {
+      ageLabel: "Farzandingiz yoshi (ixtiyoriy)",
+      agePlaceholder: "Yosh oralig'ini tanlang",
+      ageOptions: ["10-12 yosh", "13-15 yosh", "16-18 yosh"],
+      timeLabel: "Qachon bog'lanaylik? (ixtiyoriy)",
+      timePlaceholder: "Qulay vaqtni tanlang",
+      timeOptions: [
+        "09:00-12:00 oralig'ida",
+        "12:00-16:00 oralig'ida",
+        "16:00-20:00 oralig'ida",
+      ],
+      interestLabel: "Farzandingiz nimaga qiziqadi? (ixtiyoriy)",
+      interestPlaceholder: "Masalan: matematika, ingliz tili, sport",
+    },
+    sticky: {
+      title: "Qabul ochiq",
+      desc: "Bepul konsultatsiya oling",
+      cta: "Hozir yozilish",
+    },
+  },
+  UZ_KR: {
+    nudge: {
+      badge: "Қабулга тайёрланиш",
+      title: "2 дақиқада ариза, 10 дақиқада алоқага чиқамиз",
+      points: [
+        "Бепул консультация ва фарзандингизга мос тавсия",
+        "Қабул босқичлари ва керакли ҳужжатлар аниқ тушунтирилади",
+        "Сизга қулай вақтда операторимиз боғланади",
+      ],
+    },
+    fields: {
+      ageLabel: "Фарзандингиз ёши (ихтиёрий)",
+      agePlaceholder: "Ёш оралиғини танланг",
+      ageOptions: ["10-12 ёш", "13-15 ёш", "16-18 ёш"],
+      timeLabel: "Қачон боғланайлик? (ихтиёрий)",
+      timePlaceholder: "Қулай вақтни танланг",
+      timeOptions: [
+        "09:00-12:00 оралиғида",
+        "12:00-16:00 оралиғида",
+        "16:00-20:00 оралиғида",
+      ],
+      interestLabel: "Фарзандингиз нимага қизиқади? (ихтиёрий)",
+      interestPlaceholder: "Масалан: математика, инглиз тили, спорт",
+    },
+    sticky: {
+      title: "Қабул очиқ",
+      desc: "Бепул консультация олинг",
+      cta: "Ҳозир ёзилиш",
+    },
+  },
+  RU: {
+    nudge: {
+      badge: "Подготовка к приему",
+      title: "Заявка за 2 минуты, свяжемся за 10 минут",
+      points: [
+        "Бесплатная консультация и рекомендация под вашего ребенка",
+        "Пошагово объясним прием и список нужных документов",
+        "Свяжемся с вами в удобное для вас время",
+      ],
+    },
+    fields: {
+      ageLabel: "Возраст ребенка (необязательно)",
+      agePlaceholder: "Выберите возраст",
+      ageOptions: ["10-12 лет", "13-15 лет", "16-18 лет"],
+      timeLabel: "Когда удобно связаться? (необязательно)",
+      timePlaceholder: "Выберите время",
+      timeOptions: [
+        "С 09:00 до 12:00",
+        "С 12:00 до 16:00",
+        "С 16:00 до 20:00",
+      ],
+      interestLabel: "Чем больше интересуется ребенок? (необязательно)",
+      interestPlaceholder: "Например: математика, английский, спорт",
+    },
+    sticky: {
+      title: "Прием открыт",
+      desc: "Получите бесплатную консультацию",
+      cta: "Записаться сейчас",
+    },
+  },
+  EN: {
+    nudge: {
+      badge: "Admission Prep",
+      title: "Apply in 2 minutes, we contact in 10 minutes",
+      points: [
+        "Free consultation with a best-fit recommendation",
+        "Clear explanation of admission steps and documents",
+        "We contact you at your preferred time",
+      ],
+    },
+    fields: {
+      ageLabel: "Child age (optional)",
+      agePlaceholder: "Select age group",
+      ageOptions: ["10-12 years", "13-15 years", "16-18 years"],
+      timeLabel: "Preferred contact time (optional)",
+      timePlaceholder: "Select time",
+      timeOptions: ["09:00-12:00", "12:00-16:00", "16:00-20:00"],
+      interestLabel: "What is your child interested in? (optional)",
+      interestPlaceholder: "Example: math, English, sports",
+    },
+    sticky: {
+      title: "Admissions open",
+      desc: "Get a free consultation",
+      cta: "Apply now",
+    },
+  },
+};
+
 const getCountdownParts = (deadlineIso) => {
   const target = new Date(deadlineIso).getTime();
   const now = Date.now();
@@ -811,6 +930,7 @@ export default function Home() {
   const SUBMISSION_LIMIT_PER_PHONE = 2;
   const FORM_SUBMIT_STORAGE_KEY = "homeConsultSubmitCounts";
   const marketing = MARKETING_CONTENT[lang] || MARKETING_CONTENT.UZ;
+  const conversion = CONVERSION_COPY[lang] || CONVERSION_COPY.UZ;
   const quizQuestions = marketing.quiz.questions;
   const deadlineLabel = new Date(ADMISSION_DEADLINE_ISO).toLocaleString(
     lang === "RU" ? "ru-RU" : lang === "EN" ? "en-US" : "uz-UZ",
@@ -827,6 +947,9 @@ export default function Home() {
   const [status, setStatus] = useState("idle");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("+998");
+  const [childAge, setChildAge] = useState("");
+  const [contactTime, setContactTime] = useState("");
+  const [childInterest, setChildInterest] = useState("");
   const [playingVideoIndex, setPlayingVideoIndex] = useState(null);
   const [countdown, setCountdown] = useState(() =>
     getCountdownParts(ADMISSION_DEADLINE_ISO),
@@ -839,6 +962,7 @@ export default function Home() {
   const isFeedbackSectionInView = useInView(feedbackSectionRef, {
     amount: 0.2,
   });
+  const isConsultInView = useInView(consultRef, { amount: 0.25 });
 
   const normalizePhone = (value) => value.replace(/\D/g, "");
 
@@ -1013,7 +1137,13 @@ export default function Home() {
         ? `${quizResult.trackLabel} | ${quizResult.ageLabel} | ${quizResult.genderLabel}`
         : "Not completed";
 
-    trackEvent("consult_submit_attempt", { lang, quizCompleted });
+    trackEvent("consult_submit_attempt", {
+      lang,
+      quizCompleted,
+      hasAge: Boolean(childAge),
+      hasContactTime: Boolean(contactTime),
+      hasInterest: Boolean(childInterest.trim()),
+    });
 
     if (!cleanName) {
       alert("Iltimos, ismingizni kiriting.");
@@ -1051,6 +1181,9 @@ export default function Home() {
       `🎯 <b>Yangi ariza!</b>\n\n` +
       `👤 <b>Ism:</b> ${cleanName}\n` +
       `📞 <b>Telefon:</b> ${phone}\n` +
+      `👶 <b>Yosh:</b> ${childAge || "-"}\n` +
+      `⏰ <b>Qulay vaqt:</b> ${contactTime || "-"}\n` +
+      `⭐️ <b>Qiziqish:</b> ${childInterest.trim() || "-"}\n` +
       `🌐 <b>Sahifa:</b> Home / Qabul\n` +
       `🈯️ <b>Til:</b> ${lang}\n` +
       `🧠 <b>Quiz:</b> ${quizSummary}\n` +
@@ -1092,9 +1225,14 @@ export default function Home() {
           phone: normalizedPhone,
           quizCompleted,
           quizTrack: quizResult?.track || null,
+          childAge: childAge || null,
+          contactTime: contactTime || null,
         });
         setName("");
         setPhone("+998");
+        setChildAge("");
+        setContactTime("");
+        setChildInterest("");
         setTimeout(() => setStatus("idle"), 4000);
       } else {
         console.error("Telegram send failed", results);
@@ -1602,6 +1740,28 @@ export default function Home() {
             <span className="text-[#39B54A]">{t.home_page.form_title2}</span>
           </h2>
 
+          <div className="mb-7 rounded-2xl bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-4 md:p-5">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#39B54A]">
+              {conversion.nudge.badge}
+            </p>
+            <p className="mt-2 text-sm md:text-base font-bold dark:text-white leading-snug">
+              {conversion.nudge.title}
+            </p>
+            <div className="mt-3 space-y-2">
+              {conversion.nudge.points.map((point, idx) => (
+                <div key={idx} className="flex items-start gap-2">
+                  <CheckCircle
+                    size={14}
+                    className="text-[#39B54A] mt-0.5 shrink-0"
+                  />
+                  <p className="text-xs md:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                    {point}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1">
               <label
@@ -1621,6 +1781,67 @@ export default function Home() {
                 className="w-full p-4 md:p-5 rounded-2xl bg-white dark:bg-black dark:text-white border-2 border-transparent focus:border-[#39B54A] focus-visible:ring-2 focus-visible:ring-[#39B54A] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-black transition-all font-bold text-sm shadow-sm"
               />
             </div>
+            <div className="space-y-1">
+              <label
+                htmlFor="consult-age"
+                className="text-xs font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-300 ml-2"
+              >
+                {conversion.fields.ageLabel}
+              </label>
+              <select
+                id="consult-age"
+                value={childAge}
+                onChange={(e) => setChildAge(e.target.value)}
+                className="w-full p-4 md:p-5 rounded-2xl bg-white dark:bg-black dark:text-white border-2 border-transparent focus:border-[#39B54A] focus-visible:ring-2 focus-visible:ring-[#39B54A] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-black transition-all font-bold text-sm shadow-sm"
+              >
+                <option value="">{conversion.fields.agePlaceholder}</option>
+                {conversion.fields.ageOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label
+                htmlFor="consult-contact-time"
+                className="text-xs font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-300 ml-2"
+              >
+                {conversion.fields.timeLabel}
+              </label>
+              <select
+                id="consult-contact-time"
+                value={contactTime}
+                onChange={(e) => setContactTime(e.target.value)}
+                className="w-full p-4 md:p-5 rounded-2xl bg-white dark:bg-black dark:text-white border-2 border-transparent focus:border-[#39B54A] focus-visible:ring-2 focus-visible:ring-[#39B54A] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-black transition-all font-bold text-sm shadow-sm"
+              >
+                <option value="">{conversion.fields.timePlaceholder}</option>
+                {conversion.fields.timeOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label
+                htmlFor="consult-interest"
+                className="text-xs font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-300 ml-2"
+              >
+                {conversion.fields.interestLabel}
+              </label>
+              <input
+                id="consult-interest"
+                type="text"
+                value={childInterest}
+                onChange={(e) => setChildInterest(e.target.value)}
+                placeholder={conversion.fields.interestPlaceholder}
+                className="w-full p-4 md:p-5 rounded-2xl bg-white dark:bg-black dark:text-white border-2 border-transparent focus:border-[#39B54A] focus-visible:ring-2 focus-visible:ring-[#39B54A] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-black transition-all font-bold text-sm shadow-sm"
+              />
+            </div>
+
             <div className="space-y-1">
               <label
                 htmlFor="consult-phone"
@@ -1720,6 +1941,37 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <AnimatePresence>
+        {!isConsultInView && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-[120] w-[calc(100%-1.5rem)] sm:w-auto"
+          >
+            <button
+              type="button"
+              onClick={() => scrollToConsult("sticky_cta")}
+              className="w-full sm:w-auto flex items-center justify-between gap-4 rounded-2xl bg-black text-white px-4 py-3 sm:px-5 sm:py-3 shadow-2xl border border-zinc-700/60"
+            >
+              <div className="text-left">
+                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#39B54A]">
+                  {conversion.sticky.title}
+                </p>
+                <p className="text-xs sm:text-sm font-semibold">
+                  {conversion.sticky.desc}
+                </p>
+              </div>
+              <span className="shrink-0 inline-flex items-center gap-1 rounded-xl bg-[#39B54A] px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em]">
+                {conversion.sticky.cta}
+                <ArrowRight size={14} />
+              </span>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
