@@ -673,28 +673,53 @@ const DraggableMarquee = memo(({ items = [], baseVelocity = -0.4 }) => {
   const baseX = useMotionValue(0);
   const x = useTransform(baseX, (v) => `${wrap(-25, -50, v)}%`);
   const isDragging = useRef(false);
+  const momentumRef = useRef(0);
+  const viewportWidthRef = useRef(1);
+
+  useEffect(() => {
+    const updateViewportWidth = () => {
+      viewportWidthRef.current = Math.max(window.innerWidth || 1, 1);
+    };
+    updateViewportWidth();
+    window.addEventListener("resize", updateViewportWidth, { passive: true });
+    return () => window.removeEventListener("resize", updateViewportWidth);
+  }, []);
 
   useAnimationFrame((t, delta) => {
-    if (!isDragging.current) {
-      let moveBy = baseVelocity * (delta / 1000);
-      baseX.set(baseX.get() + moveBy);
+    const autoMove = baseVelocity * (delta / 1000);
+    const inertiaMove = momentumRef.current * (delta / 16.67);
+
+    if (!isDragging.current && Math.abs(momentumRef.current) > 0.0001) {
+      momentumRef.current *= 0.93;
     }
+
+    baseX.set(baseX.get() + autoMove + inertiaMove);
   });
 
   return (
     <div className="overflow-hidden flex whitespace-nowrap py-4 md:py-8 w-full cursor-grab active:cursor-grabbing select-none">
       <motion.div
         className="flex gap-4 md:gap-12 will-change-transform transform-gpu"
-        style={{ x }}
-        drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.05}
-        onDragStart={() => (isDragging.current = true)}
-        onDragEnd={() => (isDragging.current = false)}
-        onDrag={(e, info) => {
-          const currentX = baseX.get();
-          baseX.set(currentX + (info.delta.x / window.innerWidth) * 20);
+        style={{ x, touchAction: "pan-y" }}
+        onPanStart={() => {
+          isDragging.current = true;
+          momentumRef.current = 0;
         }}
+        onPan={(e, info) => {
+          const currentX = baseX.get();
+          const normalizedDelta =
+            (info.delta.x / viewportWidthRef.current) * 20;
+          baseX.set(currentX + normalizedDelta);
+          momentumRef.current =
+            (info.velocity.x / viewportWidthRef.current) * 0.045;
+        }}
+        onPanEnd={(e, info) => {
+          isDragging.current = false;
+          momentumRef.current =
+            (info.velocity.x / viewportWidthRef.current) * 0.05;
+        }}
+        drag={false}
+        whileTap={{ cursor: "grabbing" }}
       >
         {[...Array(4)].map((_, outerIdx) => (
           <div key={outerIdx} className="flex gap-4 md:gap-12">
@@ -727,28 +752,53 @@ const PremiumInfiniteSlider = ({
   const x = useTransform(baseX, (v) => `${wrap(-25, -50, v)}%`);
 
   const isDragging = useRef(false);
+  const momentumRef = useRef(0);
+  const viewportWidthRef = useRef(1);
+
+  useEffect(() => {
+    const updateViewportWidth = () => {
+      viewportWidthRef.current = Math.max(window.innerWidth || 1, 1);
+    };
+    updateViewportWidth();
+    window.addEventListener("resize", updateViewportWidth, { passive: true });
+    return () => window.removeEventListener("resize", updateViewportWidth);
+  }, []);
 
   useAnimationFrame((t, delta) => {
-    if (!isDragging.current) {
-      let moveBy = baseVelocity * (delta / 1000);
-      baseX.set(baseX.get() + moveBy);
+    const autoMove = baseVelocity * (delta / 1000);
+    const inertiaMove = momentumRef.current * (delta / 16.67);
+
+    if (!isDragging.current && Math.abs(momentumRef.current) > 0.0001) {
+      momentumRef.current *= 0.93;
     }
+
+    baseX.set(baseX.get() + autoMove + inertiaMove);
   });
 
   return (
     <div className="overflow-hidden flex whitespace-nowrap py-2 w-full cursor-grab active:cursor-grabbing select-none">
       <motion.div
         className="flex gap-6 md:gap-16 items-center will-change-transform"
-        style={{ x }}
-        drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.05}
-        onDragStart={() => (isDragging.current = true)}
-        onDragEnd={() => (isDragging.current = false)}
-        onDrag={(e, info) => {
-          const currentX = baseX.get();
-          baseX.set(currentX + (info.delta.x / window.innerWidth) * 20);
+        style={{ x, touchAction: "pan-y" }}
+        onPanStart={() => {
+          isDragging.current = true;
+          momentumRef.current = 0;
         }}
+        onPan={(e, info) => {
+          const currentX = baseX.get();
+          const normalizedDelta =
+            (info.delta.x / viewportWidthRef.current) * 20;
+          baseX.set(currentX + normalizedDelta);
+          momentumRef.current =
+            (info.velocity.x / viewportWidthRef.current) * 0.045;
+        }}
+        onPanEnd={(e, info) => {
+          isDragging.current = false;
+          momentumRef.current =
+            (info.velocity.x / viewportWidthRef.current) * 0.05;
+        }}
+        drag={false}
+        whileTap={{ cursor: "grabbing" }}
       >
         {[...Array(4)].map((_, outerIdx) => (
           <React.Fragment key={outerIdx}>
