@@ -23,6 +23,7 @@ export default function BottomNav() {
           <NavLink
             key={to}
             to={to}
+            title={label}
             className={({ isActive }) => `
               flex flex-col items-center justify-center w-full h-full space-y-1
               transition-colors duration-200
@@ -34,8 +35,8 @@ export default function BottomNav() {
             `}
           >
             <Icon size={20} strokeWidth={2} />
-            <span className="text-[9px] font-bold uppercase tracking-wide">
-              {label.length > 8 ? label.substring(0, 8) + '..' : label}
+            <span className="max-w-[68px] truncate text-[10px] font-bold uppercase tracking-wide">
+              {label}
             </span>
           </NavLink>
         ))}

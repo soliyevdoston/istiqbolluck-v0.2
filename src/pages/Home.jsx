@@ -8,11 +8,12 @@ import {
   useMotionValue,
   useAnimationFrame,
   useTransform,
-  useSpring,
 } from "framer-motion";
 import {
   Play,
   Instagram,
+  Brain,
+  Clock3,
   Loader2,
   CheckCircle,
   AlertCircle,
@@ -29,26 +30,534 @@ import { useLanguage } from "../context/LanguageContext";
 const wrap = (min, max, v) =>
   ((((v - min) % (max - min)) + (max - min)) % (max - min)) + min;
 
+const ADMISSION_DEADLINE_ISO =
+  import.meta.env.VITE_ADMISSION_DEADLINE || "2026-08-31T23:59:59+05:00";
+
+const MARKETING_CONTENT = {
+  UZ: {
+    countdown: {
+      badge: "Qabul Yakuniga Qoldi",
+      title: "Bepul konsultatsiya uchun hozir yoziling",
+      desc: "Qabul yopilishidan oldin joy band qiling.",
+      labels: ["Kun", "Soat", "Daqiqa", "Soniya"],
+      cta: "Konsultatsiyaga o'tish",
+      ended: "Qabul muddati yakunlangan",
+    },
+    quiz: {
+      badge: "60 soniyalik test",
+      title: "Farzandingizga mos yo'nalishni aniqlang",
+      desc: "Oddiy savollarga javob bering, natijada mos yo'nalishni olasiz.",
+      start: "Testni boshlash",
+      restart: "Qayta boshlash",
+      resultTitle: "Natija",
+      resultPrefix: "Tavsiya etilgan yo'nalish:",
+      profilePrefix: "Profil:",
+      tracks: {
+        medicine: "Tibbiyot yo'nalishi",
+        stem: "Matematika / IT yo'nalishi",
+        languages: "Tillar yo'nalishi",
+        social: "Huquq / Iqtisod yo'nalishi",
+      },
+      cta: "Natija bilan konsultatsiya olish",
+      questions: [
+        {
+          id: "gender",
+          q: "Farzandingiz kim?",
+          options: [
+            { label: "O'g'il bola", value: "boy" },
+            { label: "Qiz bola", value: "girl" },
+          ],
+        },
+        {
+          id: "age",
+          q: "Farzandingiz yoshi nechada?",
+          options: [
+            { label: "10-12 yosh", value: "10-12" },
+            { label: "13-15 yosh", value: "13-15" },
+            { label: "16-18 yosh", value: "16-18" },
+          ],
+        },
+        {
+          id: "free_time",
+          q: "Bo'sh vaqtda ko'proq nima qilishni yoqtiradi?",
+          options: [
+            {
+              label: "Tajriba, tabiat va sog'liq mavzulari",
+              value: "free_time_medicine",
+              weights: { medicine: 2 },
+            },
+            {
+              label: "Mantiqiy masala, texnika, dastur o'yinlari",
+              value: "free_time_stem",
+              weights: { stem: 2 },
+            },
+            {
+              label: "Kitob, til o'rganish, yozish",
+              value: "free_time_languages",
+              weights: { languages: 2 },
+            },
+            {
+              label: "Muloqot, tadbir, savdo/biznesga qiziqish",
+              value: "free_time_social",
+              weights: { social: 2 },
+            },
+          ],
+        },
+        {
+          id: "strength",
+          q: "Maktabda qaysi fanlar osonroq ketadi?",
+          options: [
+            {
+              label: "Biologiya va Kimyo",
+              value: "strength_medicine",
+              weights: { medicine: 2 },
+            },
+            {
+              label: "Matematika va Fizika",
+              value: "strength_stem",
+              weights: { stem: 2 },
+            },
+            {
+              label: "Ingliz tili va Ona tili",
+              value: "strength_languages",
+              weights: { languages: 2 },
+            },
+            {
+              label: "Tarix va Huquq",
+              value: "strength_social",
+              weights: { social: 2 },
+            },
+          ],
+        },
+        {
+          id: "study_time",
+          q: "Kuniga o'qish uchun qancha vaqt ajrata oladi?",
+          options: [
+            {
+              label: "3 soatdan ko'p",
+              value: "time_high",
+              weights: { stem: 1, medicine: 1 },
+            },
+            {
+              label: "1-2 soat",
+              value: "time_mid",
+              weights: { languages: 1, social: 1 },
+            },
+            {
+              label: "1 soatdan kam",
+              value: "time_low",
+              weights: { languages: 1 },
+            },
+          ],
+        },
+      ],
+    },
+  },
+  UZ_KR: {
+    countdown: {
+      badge: "Қабул Якунига Қолди",
+      title: "Бепул консультация учун ҳозир ёзилинг",
+      desc: "Қабул ёпилишидан олдин жой банд қилинг.",
+      labels: ["Кун", "Соат", "Дақиқа", "Сония"],
+      cta: "Консультацияга ўтиш",
+      ended: "Қабул муддати якунланган",
+    },
+    quiz: {
+      badge: "60 сониялик тест",
+      title: "Фарзандингизга мос йўналишни аниқланг",
+      desc: "Оддий саволларга жавоб беринг, натижада мос йўналишни оласиз.",
+      start: "Тестни бошлаш",
+      restart: "Қайта бошлаш",
+      resultTitle: "Натижа",
+      resultPrefix: "Тавсия этилган йўналиш:",
+      profilePrefix: "Профил:",
+      tracks: {
+        medicine: "Тиббиёт йўналиши",
+        stem: "Математика / IT йўналиши",
+        languages: "Тиллар йўналиши",
+        social: "Ҳуқуқ / Иқтисод йўналиши",
+      },
+      cta: "Натижа билан консультация олиш",
+      questions: [
+        {
+          id: "gender",
+          q: "Фарзандингиз ким?",
+          options: [
+            { label: "Ўғил бола", value: "boy" },
+            { label: "Қиз бола", value: "girl" },
+          ],
+        },
+        {
+          id: "age",
+          q: "Фарзандингиз ёши нечада?",
+          options: [
+            { label: "10-12 ёш", value: "10-12" },
+            { label: "13-15 ёш", value: "13-15" },
+            { label: "16-18 ёш", value: "16-18" },
+          ],
+        },
+        {
+          id: "free_time",
+          q: "Бўш вақтда кўпроқ нима қилишни ёқтиради?",
+          options: [
+            {
+              label: "Тажриба, табиат ва соғлиқ мавзулари",
+              value: "free_time_medicine",
+              weights: { medicine: 2 },
+            },
+            {
+              label: "Мантиқий масала, техника, дастур ўйинлари",
+              value: "free_time_stem",
+              weights: { stem: 2 },
+            },
+            {
+              label: "Китоб, тил ўрганиш, ёзиш",
+              value: "free_time_languages",
+              weights: { languages: 2 },
+            },
+            {
+              label: "Мулоқот, тадбир, савдо/бизнес қизиқиши",
+              value: "free_time_social",
+              weights: { social: 2 },
+            },
+          ],
+        },
+        {
+          id: "strength",
+          q: "Мактабда қайси фанлар осонроқ кетади?",
+          options: [
+            {
+              label: "Биология ва Кимё",
+              value: "strength_medicine",
+              weights: { medicine: 2 },
+            },
+            {
+              label: "Математика ва Физика",
+              value: "strength_stem",
+              weights: { stem: 2 },
+            },
+            {
+              label: "Инглиз тили ва Она тили",
+              value: "strength_languages",
+              weights: { languages: 2 },
+            },
+            {
+              label: "Тарих ва Ҳуқуқ",
+              value: "strength_social",
+              weights: { social: 2 },
+            },
+          ],
+        },
+        {
+          id: "study_time",
+          q: "Кунига ўқиш учун қанча вақт ажрата олади?",
+          options: [
+            {
+              label: "3 соатдан кўп",
+              value: "time_high",
+              weights: { stem: 1, medicine: 1 },
+            },
+            {
+              label: "1-2 соат",
+              value: "time_mid",
+              weights: { languages: 1, social: 1 },
+            },
+            {
+              label: "1 соатдан кам",
+              value: "time_low",
+              weights: { languages: 1 },
+            },
+          ],
+        },
+      ],
+    },
+  },
+  RU: {
+    countdown: {
+      badge: "До Конца Приема",
+      title: "Запишитесь на бесплатную консультацию сейчас",
+      desc: "Забронируйте место до закрытия приема.",
+      labels: ["Дни", "Часы", "Мин", "Сек"],
+      cta: "Перейти к консультации",
+      ended: "Срок приема завершен",
+    },
+    quiz: {
+      badge: "Тест за 60 секунд",
+      title: "Определите подходящее направление для ребенка",
+      desc: "Ответьте на простые вопросы и получите рекомендацию по направлению.",
+      start: "Начать тест",
+      restart: "Пройти заново",
+      resultTitle: "Результат",
+      resultPrefix: "Рекомендуемое направление:",
+      profilePrefix: "Профиль:",
+      tracks: {
+        medicine: "Медицинское направление",
+        stem: "Математика / IT",
+        languages: "Языковое направление",
+        social: "Право / Экономика",
+      },
+      cta: "Получить консультацию по результату",
+      questions: [
+        {
+          id: "gender",
+          q: "Пол ребенка?",
+          options: [
+            { label: "Мальчик", value: "boy" },
+            { label: "Девочка", value: "girl" },
+          ],
+        },
+        {
+          id: "age",
+          q: "Сколько лет вашему ребенку?",
+          options: [
+            { label: "10-12 лет", value: "10-12" },
+            { label: "13-15 лет", value: "13-15" },
+            { label: "16-18 лет", value: "16-18" },
+          ],
+        },
+        {
+          id: "free_time",
+          q: "Чем чаще любит заниматься в свободное время?",
+          options: [
+            {
+              label: "Эксперименты, природа, темы здоровья",
+              value: "free_time_medicine",
+              weights: { medicine: 2 },
+            },
+            {
+              label: "Логические задачи, техника, программные игры",
+              value: "free_time_stem",
+              weights: { stem: 2 },
+            },
+            {
+              label: "Книги, изучение языков, письмо",
+              value: "free_time_languages",
+              weights: { languages: 2 },
+            },
+            {
+              label: "Общение, мероприятия, интерес к бизнесу",
+              value: "free_time_social",
+              weights: { social: 2 },
+            },
+          ],
+        },
+        {
+          id: "strength",
+          q: "Какие предметы даются легче?",
+          options: [
+            {
+              label: "Биология и Химия",
+              value: "strength_medicine",
+              weights: { medicine: 2 },
+            },
+            {
+              label: "Математика и Физика",
+              value: "strength_stem",
+              weights: { stem: 2 },
+            },
+            {
+              label: "Английский и Родной язык",
+              value: "strength_languages",
+              weights: { languages: 2 },
+            },
+            {
+              label: "История и Право",
+              value: "strength_social",
+              weights: { social: 2 },
+            },
+          ],
+        },
+        {
+          id: "study_time",
+          q: "Сколько времени в день может уделять учебе?",
+          options: [
+            {
+              label: "Больше 3 часов",
+              value: "time_high",
+              weights: { stem: 1, medicine: 1 },
+            },
+            {
+              label: "1-2 часа",
+              value: "time_mid",
+              weights: { languages: 1, social: 1 },
+            },
+            {
+              label: "Меньше 1 часа",
+              value: "time_low",
+              weights: { languages: 1 },
+            },
+          ],
+        },
+      ],
+    },
+  },
+  EN: {
+    countdown: {
+      badge: "Admission Closing In",
+      title: "Book your free consultation now",
+      desc: "Reserve your spot before admission closes.",
+      labels: ["Days", "Hours", "Min", "Sec"],
+      cta: "Go to consultation",
+      ended: "Admission deadline has passed",
+    },
+    quiz: {
+      badge: "60-second quiz",
+      title: "Find your child's best-fit track",
+      desc: "Answer simple questions and get a recommended track.",
+      start: "Start quiz",
+      restart: "Restart",
+      resultTitle: "Result",
+      resultPrefix: "Recommended track:",
+      profilePrefix: "Profile:",
+      tracks: {
+        medicine: "Medical track",
+        stem: "Math / IT track",
+        languages: "Languages track",
+        social: "Law / Economics track",
+      },
+      cta: "Get consultation with this result",
+      questions: [
+        {
+          id: "gender",
+          q: "Your child's gender?",
+          options: [
+            { label: "Boy", value: "boy" },
+            { label: "Girl", value: "girl" },
+          ],
+        },
+        {
+          id: "age",
+          q: "Your child's age group?",
+          options: [
+            { label: "10-12 years", value: "10-12" },
+            { label: "13-15 years", value: "13-15" },
+            { label: "16-18 years", value: "16-18" },
+          ],
+        },
+        {
+          id: "free_time",
+          q: "What does your child enjoy most in free time?",
+          options: [
+            {
+              label: "Experiments, nature, health topics",
+              value: "free_time_medicine",
+              weights: { medicine: 2 },
+            },
+            {
+              label: "Logic tasks, tech, coding games",
+              value: "free_time_stem",
+              weights: { stem: 2 },
+            },
+            {
+              label: "Books, language learning, writing",
+              value: "free_time_languages",
+              weights: { languages: 2 },
+            },
+            {
+              label: "Communication, events, business interest",
+              value: "free_time_social",
+              weights: { social: 2 },
+            },
+          ],
+        },
+        {
+          id: "strength",
+          q: "Which school subjects feel easier?",
+          options: [
+            {
+              label: "Biology & Chemistry",
+              value: "strength_medicine",
+              weights: { medicine: 2 },
+            },
+            {
+              label: "Math & Physics",
+              value: "strength_stem",
+              weights: { stem: 2 },
+            },
+            {
+              label: "English & Native Language",
+              value: "strength_languages",
+              weights: { languages: 2 },
+            },
+            {
+              label: "History & Law",
+              value: "strength_social",
+              weights: { social: 2 },
+            },
+          ],
+        },
+        {
+          id: "study_time",
+          q: "How much daily study time is realistic?",
+          options: [
+            {
+              label: "More than 3 hours",
+              value: "time_high",
+              weights: { stem: 1, medicine: 1 },
+            },
+            {
+              label: "1-2 hours",
+              value: "time_mid",
+              weights: { languages: 1, social: 1 },
+            },
+            {
+              label: "Less than 1 hour",
+              value: "time_low",
+              weights: { languages: 1 },
+            },
+          ],
+        },
+      ],
+    },
+  },
+};
+
+const getCountdownParts = (deadlineIso) => {
+  const target = new Date(deadlineIso).getTime();
+  const now = Date.now();
+  const diff = target - now;
+
+  if (Number.isNaN(target) || diff <= 0) {
+    return {
+      isOver: true,
+      days: "00",
+      hours: "00",
+      minutes: "00",
+      seconds: "00",
+    };
+  }
+
+  const totalSeconds = Math.floor(diff / 1000);
+  const days = String(Math.floor(totalSeconds / 86400)).padStart(2, "0");
+  const hours = String(Math.floor((totalSeconds % 86400) / 3600)).padStart(
+    2,
+    "0",
+  );
+  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(
+    2,
+    "0",
+  );
+  const seconds = String(totalSeconds % 60).padStart(2, "0");
+
+  return {
+    isOver: false,
+    days,
+    hours,
+    minutes,
+    seconds,
+  };
+};
+
 // --- 2. KOMPONENTLAR ---
 
-// --- 1. HYPER-SMOOTH & SLOW MARQUEE ---
-const DraggableMarquee = memo(({ items = [], baseVelocity = -0.02 }) => {
+const DraggableMarquee = memo(({ items = [], baseVelocity = -0.4 }) => {
   const baseX = useMotionValue(0);
-  
-  // Juda yuqori damping va past stiffness silliqlikni ta'minlaydi
-  const smoothX = useSpring(baseX, {
-    damping: 100, 
-    stiffness: 100,
-    restDelta: 0.001
-  });
-
-  const x = useTransform(smoothX, (v) => `${wrap(-25, -50, v)}%`);
+  const x = useTransform(baseX, (v) => `${wrap(-25, -50, v)}%`);
   const isDragging = useRef(false);
 
   useAnimationFrame((t, delta) => {
     if (!isDragging.current) {
-      // Delta vaqtiga bog'liq o'ta sekin harakat
-      let moveBy = baseVelocity * (delta / 10); 
+      let moveBy = baseVelocity * (delta / 1000);
       baseX.set(baseX.get() + moveBy);
     }
   });
@@ -60,12 +569,12 @@ const DraggableMarquee = memo(({ items = [], baseVelocity = -0.02 }) => {
         style={{ x }}
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.05}
         onDragStart={() => (isDragging.current = true)}
         onDragEnd={() => (isDragging.current = false)}
         onDrag={(e, info) => {
           const currentX = baseX.get();
-          // Drag paytida sezgirlikni yanada yumshoq qilish
-          baseX.set(currentX + info.delta.x * 0.03);
+          baseX.set(currentX + (info.delta.x / window.innerWidth) * 20);
         }}
       >
         {[...Array(4)].map((_, outerIdx) => (
@@ -91,7 +600,7 @@ const DraggableMarquee = memo(({ items = [], baseVelocity = -0.02 }) => {
 
 const PremiumInfiniteSlider = ({
   items,
-  baseVelocity = -0.5, 
+  baseVelocity = -0.5,
   isText = false,
 }) => {
   const baseX = useMotionValue(0);
@@ -111,7 +620,7 @@ const PremiumInfiniteSlider = ({
     <div className="overflow-hidden flex whitespace-nowrap py-2 w-full cursor-grab active:cursor-grabbing select-none">
       <motion.div
         className="flex gap-6 md:gap-16 items-center will-change-transform"
-        style={{ x }} 
+        style={{ x }}
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.05}
@@ -149,7 +658,7 @@ const PremiumInfiniteSlider = ({
 
 const VideoFeedbackCard = ({ feedback, isPlaying, onPlay }) => {
   const instagramUrl =
-    feedback.instagramUrl || "https://instagram.com/istiqbol_luck_ntm2020";
+    feedback.instagramUrl || "https://instagram.com/istiqbolluckuz";
 
   return (
     <div className="flex-shrink-0 lg:shrink w-[82vw] sm:w-[45vw] lg:w-full snap-center px-2 lg:px-0 h-full">
@@ -298,15 +807,168 @@ const FAQItem = ({ faq }) => {
 export default function Home() {
   const { t, lang } = useLanguage();
   const consultRef = useRef(null);
+  const feedbackSectionRef = useRef(null);
   const SUBMISSION_LIMIT_PER_PHONE = 2;
   const FORM_SUBMIT_STORAGE_KEY = "homeConsultSubmitCounts";
+  const marketing = MARKETING_CONTENT[lang] || MARKETING_CONTENT.UZ;
+  const quizQuestions = marketing.quiz.questions;
+  const deadlineLabel = new Date(ADMISSION_DEADLINE_ISO).toLocaleString(
+    lang === "RU" ? "ru-RU" : lang === "EN" ? "en-US" : "uz-UZ",
+    {
+      timeZone: "Asia/Tashkent",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    },
+  );
 
   const [status, setStatus] = useState("idle");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("+998");
   const [playingVideoIndex, setPlayingVideoIndex] = useState(null);
+  const [countdown, setCountdown] = useState(() =>
+    getCountdownParts(ADMISSION_DEADLINE_ISO),
+  );
+  const [quizStarted, setQuizStarted] = useState(false);
+  const [quizCompleted, setQuizCompleted] = useState(false);
+  const [quizIndex, setQuizIndex] = useState(0);
+  const [quizAnswers, setQuizAnswers] = useState([]);
+  const [quizResult, setQuizResult] = useState(null);
+  const isFeedbackSectionInView = useInView(feedbackSectionRef, {
+    amount: 0.2,
+  });
 
   const normalizePhone = (value) => value.replace(/\D/g, "");
+
+  const trackEvent = (eventName, params = {}) => {
+    if (typeof window === "undefined") return;
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: eventName, ...params });
+    if (typeof window.gtag === "function") {
+      window.gtag("event", eventName, params);
+    }
+  };
+
+  const scrollToConsult = (source = "unknown") => {
+    trackEvent("consult_cta_click", { source, lang });
+    consultRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown(getCountdownParts(ADMISSION_DEADLINE_ISO));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    setQuizStarted(false);
+    setQuizCompleted(false);
+    setQuizIndex(0);
+    setQuizAnswers([]);
+    setQuizResult(null);
+  }, [lang]);
+
+  useEffect(() => {
+    if (!isFeedbackSectionInView && playingVideoIndex !== null) {
+      setPlayingVideoIndex(null);
+    }
+  }, [isFeedbackSectionInView, playingVideoIndex]);
+
+  const startQuiz = () => {
+    setQuizStarted(true);
+    setQuizCompleted(false);
+    setQuizIndex(0);
+    setQuizAnswers([]);
+    setQuizResult(null);
+    trackEvent("quiz_start", { lang });
+  };
+
+  const restartQuiz = () => {
+    setQuizStarted(false);
+    setQuizCompleted(false);
+    setQuizIndex(0);
+    setQuizAnswers([]);
+    setQuizResult(null);
+    trackEvent("quiz_restart", { lang });
+  };
+
+  const getOptionLabel = (option) =>
+    typeof option === "string" ? option : option?.label || "";
+
+  const getOptionValue = (option) =>
+    typeof option === "string" ? option : option?.value || "";
+
+  const buildQuizResult = (answers) => {
+    const points = {
+      medicine: 0,
+      stem: 0,
+      languages: 0,
+      social: 0,
+    };
+
+    let genderLabel = "";
+    let ageLabel = "";
+
+    quizQuestions.forEach((question, qIndex) => {
+      const selectedIndex = answers[qIndex];
+      const selectedOption = question.options[selectedIndex];
+      const value = getOptionValue(selectedOption);
+      const label = getOptionLabel(selectedOption);
+
+      if (question.id === "gender") genderLabel = label;
+      if (question.id === "age") ageLabel = label;
+
+      if (
+        selectedOption &&
+        typeof selectedOption === "object" &&
+        selectedOption.weights
+      ) {
+        Object.entries(selectedOption.weights).forEach(([track, weight]) => {
+          if (points[track] !== undefined) {
+            points[track] += Number(weight) || 0;
+          }
+        });
+      } else if (points[value] !== undefined) {
+        points[value] += 1;
+      }
+    });
+
+    const topTrack =
+      Object.entries(points).sort((a, b) => b[1] - a[1])[0]?.[0] || "stem";
+    const trackLabel =
+      marketing.quiz.tracks[topTrack] || marketing.quiz.tracks.stem;
+
+    return {
+      track: topTrack,
+      trackLabel,
+      ageLabel,
+      genderLabel,
+      points,
+    };
+  };
+
+  const handleQuizAnswer = (optionIndex) => {
+    const updatedAnswers = [...quizAnswers];
+    updatedAnswers[quizIndex] = optionIndex;
+    setQuizAnswers(updatedAnswers);
+
+    if (quizIndex === quizQuestions.length - 1) {
+      const result = buildQuizResult(updatedAnswers);
+      setQuizResult(result);
+      setQuizCompleted(true);
+      trackEvent("quiz_complete", {
+        lang,
+        track: result.track,
+        ageLabel: result.ageLabel,
+        genderLabel: result.genderLabel,
+      });
+      return;
+    }
+    setQuizIndex((prev) => prev + 1);
+  };
 
   const getSubmitCounts = () => {
     try {
@@ -346,6 +1008,12 @@ export default function Home() {
     e.preventDefault();
     const cleanName = name.trim();
     const normalizedPhone = normalizePhone(phone);
+    const quizSummary =
+      quizCompleted && quizResult
+        ? `${quizResult.trackLabel} | ${quizResult.ageLabel} | ${quizResult.genderLabel}`
+        : "Not completed";
+
+    trackEvent("consult_submit_attempt", { lang, quizCompleted });
 
     if (!cleanName) {
       alert("Iltimos, ismingizni kiriting.");
@@ -359,6 +1027,7 @@ export default function Home() {
 
     if (getPhoneSubmitCount(normalizedPhone) >= SUBMISSION_LIMIT_PER_PHONE) {
       setStatus("limit");
+      trackEvent("consult_submit_limit", { lang, phone: normalizedPhone });
       setTimeout(() => setStatus("idle"), 4000);
       return;
     }
@@ -384,6 +1053,7 @@ export default function Home() {
       `📞 <b>Telefon:</b> ${phone}\n` +
       `🌐 <b>Sahifa:</b> Home / Qabul\n` +
       `🈯️ <b>Til:</b> ${lang}\n` +
+      `🧠 <b>Quiz:</b> ${quizSummary}\n` +
       `🕒 <b>Vaqt:</b> ${submittedAt}`;
 
     try {
@@ -417,17 +1087,33 @@ export default function Home() {
       if (delivered) {
         incrementPhoneSubmitCount(normalizedPhone);
         setStatus("success");
+        trackEvent("consult_submit_success", {
+          lang,
+          phone: normalizedPhone,
+          quizCompleted,
+          quizTrack: quizResult?.track || null,
+        });
         setName("");
         setPhone("+998");
         setTimeout(() => setStatus("idle"), 4000);
       } else {
         console.error("Telegram send failed", results);
         setStatus("error");
+        trackEvent("consult_submit_error", {
+          lang,
+          phone: normalizedPhone,
+          reason: "telegram_failed",
+        });
         setTimeout(() => setStatus("idle"), 4000);
       }
     } catch (error) {
       console.error("Telegram send exception", error);
       setStatus("error");
+      trackEvent("consult_submit_error", {
+        lang,
+        phone: normalizedPhone,
+        reason: "exception",
+      });
       setTimeout(() => setStatus("idle"), 4000);
     }
   };
@@ -475,12 +1161,7 @@ export default function Home() {
 
             <div className="mt-8 md:mt-10 max-w-2xl">
               <p className="text-lg sm:text-xl md:text-2xl font-light tracking-tight text-gray-300 leading-relaxed">
-                {t.home_page.hero_desc.split("—")[0]} —
-                <span className="text-white font-medium italic">
-                  {" "}
-                  {t.home_page.hero_desc.split("—")[1]?.split("shu")[0]}{" "}
-                </span>
-                {t.home_page.hero_desc.split("yetakchilari")[1]}
+                {t.home_page.hero_desc}
               </p>
             </div>
           </motion.div>
@@ -491,9 +1172,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
             >
               <motion.button
-                onClick={() =>
-                  consultRef.current?.scrollIntoView({ behavior: "smooth" })
-                }
+                onClick={() => scrollToConsult("hero_cta")}
                 whileHover={{
                   scale: 1.08,
                   boxShadow: "0px 0px 20px rgba(57, 181, 74, 0.2)",
@@ -533,7 +1212,7 @@ export default function Home() {
                 {t.home_page.adv_title}
               </p>
             </div>
-            <p className="max-w-xs text-zinc-500 dark:text-zinc-400 border-l-2 border-[#39B54A] pl-5 italic font-medium text-[11px] md:text-base leading-relaxed text-left">
+            <p className="max-w-xs text-zinc-700 dark:text-zinc-300 border-l-2 border-[#39B54A] pl-5 italic font-medium text-xs md:text-base leading-relaxed text-left">
               {t.home_page.adv_desc}
             </p>
           </div>
@@ -551,7 +1230,7 @@ export default function Home() {
                   <h3 className="text-sm md:text-2xl font-bold mt-4 md:mt-8 mb-2 md:mb-4 dark:text-white leading-tight uppercase italic tracking-tight">
                     {adv.title}
                   </h3>
-                  <p className="text-zinc-600 dark:text-zinc-400 text-[10px] md:text-lg italic leading-snug">
+                  <p className="text-zinc-700 dark:text-zinc-300 text-xs md:text-lg italic leading-snug">
                     {adv.desc}
                   </p>
                 </div>
@@ -582,14 +1261,14 @@ export default function Home() {
                 key={i}
                 className={`group text-center flex flex-col items-center ${i === 2 ? "col-span-2 md:col-span-1" : "col-span-1"}`}
               >
-                <h4 className="text-[9px] md:text-[10px] font-black uppercase text-zinc-400 mb-2 tracking-widest">
+                <h4 className="text-[10px] md:text-xs font-black uppercase text-zinc-600 dark:text-zinc-300 mb-2 tracking-widest">
                   {s.label}
                 </h4>
                 <div className="text-4xl md:text-7xl font-black text-black dark:text-white mb-2 group-hover:text-[#39B54A] transition-colors duration-500">
                   <Counter value={s.value} />
                 </div>
                 <div className="w-6 h-0.5 bg-[#39B54A] opacity-20 group-hover:w-12 group-hover:opacity-100 transition-all duration-500 mb-3"></div>
-                <p className="text-[10px] md:text-xs text-zinc-500 dark:text-zinc-400 italic px-2 max-w-[180px] leading-relaxed font-medium">
+                <p className="text-xs md:text-sm text-zinc-700 dark:text-zinc-300 italic px-2 max-w-[180px] leading-relaxed font-medium">
                   {s.desc}
                 </p>
               </div>
@@ -611,7 +1290,7 @@ export default function Home() {
               </h2>
               <div className="flex items-stretch gap-4 md:gap-6 max-w-md">
                 <div className="w-[2px] md:w-[3px] bg-[#39B54A] opacity-30 shrink-0"></div>
-                <p className="text-zinc-400 dark:text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] leading-relaxed py-1">
+                <p className="text-zinc-700 dark:text-zinc-300 text-xs md:text-sm font-bold uppercase tracking-[0.2em] leading-relaxed py-1">
                   {t.home_page.life_desc}
                 </p>
               </div>
@@ -620,11 +1299,11 @@ export default function Home() {
 
           <div className="space-y-4 md:space-y-8">
             <DraggableMarquee
-              baseVelocity={-0.005}
+              baseVelocity={-0.4}
               items={t.life_page.galleryRow1}
             />
             <DraggableMarquee
-              baseVelocity={0.005}
+              baseVelocity={0.4}
               items={t.life_page.galleryRow2}
             />
           </div>
@@ -632,7 +1311,10 @@ export default function Home() {
       </section>
 
       {/* 5. FEEDBACK SECTION */}
-      <section className="cv-auto py-16 md:py-32 bg-white dark:bg-[#050505] overflow-hidden transition-colors">
+      <section
+        ref={feedbackSectionRef}
+        className="cv-auto py-16 md:py-32 bg-white dark:bg-[#050505] overflow-hidden transition-colors"
+      >
         <div className="w-full text-left">
           <div className="max-w-7xl mx-auto px-6 mb-12 md:mb-20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-12">
@@ -649,7 +1331,7 @@ export default function Home() {
               </div>
               <div className="flex items-stretch gap-4 md:gap-6 max-w-md">
                 <div className="w-[2px] md:w-[3px] bg-[#39B54A] opacity-30 shrink-0"></div>
-                <p className="text-zinc-400 dark:text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] leading-relaxed py-1">
+                <p className="text-zinc-700 dark:text-zinc-300 text-xs md:text-sm font-bold uppercase tracking-[0.2em] leading-relaxed py-1">
                   {t.home_page.feed_desc}
                 </p>
               </div>
@@ -663,7 +1345,7 @@ export default function Home() {
                   key={i}
                   className="snap-center shrink-0 lg:shrink w-[85vw] sm:w-[45vw] lg:w-auto"
                 >
-                  <VideoFeedbackCard 
+                  <VideoFeedbackCard
                     feedback={f}
                     isPlaying={playingVideoIndex === i}
                     onPlay={() => setPlayingVideoIndex(i)}
@@ -706,7 +1388,7 @@ export default function Home() {
               </div>
               <div className="flex items-stretch gap-4 md:gap-6 max-w-md">
                 <div className="w-[2px] md:w-[3px] bg-[#39B54A] opacity-30 shrink-0"></div>
-                <p className="text-zinc-400 dark:text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] leading-relaxed py-1">
+                <p className="text-zinc-700 dark:text-zinc-300 text-xs md:text-sm font-bold uppercase tracking-[0.2em] leading-relaxed py-1">
                   {t.home_page.uni_desc}
                 </p>
               </div>
@@ -727,7 +1409,146 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 7. KONSULTATSIYA SECTION */}
+      {/* 7. COUNTDOWN + QUIZ */}
+      <section className="cv-auto py-16 md:py-24 bg-white dark:bg-[#050505] border-b border-zinc-100 dark:border-zinc-900 transition-colors">
+        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-6 md:gap-8">
+          <div className="rounded-[2rem] bg-[#e2dfdf] dark:bg-[#0c0c0c] border border-zinc-200/50 dark:border-zinc-800 p-6 md:p-8 shadow-sm">
+            <div className="inline-flex items-center gap-2 text-[#39B54A] text-[10px] font-black uppercase tracking-[0.2em]">
+              <Clock3 size={14} />
+              <span>{marketing.countdown.badge}</span>
+            </div>
+            <h3 className="mt-3 text-2xl md:text-3xl font-black uppercase leading-tight dark:text-white">
+              {marketing.countdown.title}
+            </h3>
+            <p className="mt-2 text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
+              {marketing.countdown.desc}
+            </p>
+
+            <div
+              className="mt-6 grid grid-cols-4 gap-2 md:gap-3"
+              aria-live="polite"
+              aria-label={marketing.countdown.badge}
+            >
+              {[
+                countdown.days,
+                countdown.hours,
+                countdown.minutes,
+                countdown.seconds,
+              ].map((value, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-xl bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 py-3 text-center"
+                >
+                  <div className="text-xl md:text-2xl font-black text-black dark:text-white leading-none">
+                    {value}
+                  </div>
+                  <div className="mt-1 text-[9px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                    {marketing.countdown.labels[idx]}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-500">
+              {countdown.isOver ? marketing.countdown.ended : deadlineLabel}
+            </p>
+
+            <button
+              type="button"
+              onClick={() => scrollToConsult("countdown_cta")}
+              className="mt-5 inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#39B54A] text-white text-[11px] font-black uppercase tracking-[0.14em] hover:bg-[#2f9f3f] transition-colors"
+            >
+              <span>{marketing.countdown.cta}</span>
+              <ArrowRight size={16} />
+            </button>
+          </div>
+
+          <div className="rounded-[2rem] bg-[#e2dfdf] dark:bg-[#0c0c0c] border border-zinc-200/50 dark:border-zinc-800 p-6 md:p-8 shadow-sm">
+            <div className="inline-flex items-center gap-2 text-[#39B54A] text-[10px] font-black uppercase tracking-[0.2em]">
+              <Brain size={14} />
+              <span>{marketing.quiz.badge}</span>
+            </div>
+            <h3 className="mt-3 text-2xl md:text-3xl font-black uppercase leading-tight dark:text-white">
+              {marketing.quiz.title}
+            </h3>
+            <p className="mt-2 text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
+              {marketing.quiz.desc}
+            </p>
+
+            {!quizStarted && (
+              <button
+                type="button"
+                onClick={startQuiz}
+                className="mt-6 inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-black dark:bg-white text-white dark:text-black text-[11px] font-black uppercase tracking-[0.14em] hover:bg-[#39B54A] hover:text-white transition-colors"
+              >
+                {marketing.quiz.start}
+              </button>
+            )}
+
+            {quizStarted && !quizCompleted && (
+              <div className="mt-6">
+                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-500 mb-2">
+                  {quizIndex + 1} / {quizQuestions.length}
+                </p>
+                <h4 className="text-base md:text-lg font-bold dark:text-white mb-4">
+                  {quizQuestions[quizIndex].q}
+                </h4>
+                <div className="space-y-2">
+                  {quizQuestions[quizIndex].options.map((option, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleQuizAnswer(idx)}
+                      className="w-full text-left px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-black text-sm font-semibold dark:text-white hover:border-[#39B54A] hover:bg-[#39B54A]/5 transition-colors"
+                    >
+                      {getOptionLabel(option)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {quizStarted && quizCompleted && (
+              <div className="mt-6 space-y-4">
+                <div className="rounded-xl bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-500">
+                    {marketing.quiz.resultTitle}
+                  </p>
+                  <h4 className="mt-2 text-xl md:text-2xl font-black text-[#39B54A]">
+                    {quizResult?.trackLabel}
+                  </h4>
+                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                    {marketing.quiz.resultPrefix} {quizResult?.trackLabel}
+                  </p>
+                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                    {marketing.quiz.profilePrefix} {quizResult?.genderLabel} •{" "}
+                    {quizResult?.ageLabel}
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="button"
+                    onClick={() => scrollToConsult("quiz_result_cta")}
+                    className="sm:flex-1 px-4 py-3 rounded-xl bg-[#39B54A] text-white text-[11px] font-black uppercase tracking-[0.12em] hover:bg-[#2f9f3f] transition-colors"
+                  >
+                    {marketing.quiz.cta}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={restartQuiz}
+                    className="sm:flex-1 px-4 py-3 rounded-xl border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 text-[11px] font-black uppercase tracking-[0.12em] hover:border-[#39B54A] transition-colors"
+                  >
+                    {marketing.quiz.restart}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* 8. KONSULTATSIYA SECTION */}
       <section
         id="consult-section"
         ref={consultRef}
@@ -760,8 +1581,7 @@ export default function Home() {
                   {status === "success"
                     ? t.home_page.form_success_title
                     : status === "limit"
-                      ? t.home_page.form_limit_title ||
-                        "So'rov limiti tugadi"
+                      ? t.home_page.form_limit_title || "So'rov limiti tugadi"
                       : t.home_page.form_error_title || "Xatolik yuz berdi"}
                 </h3>
                 <p className="text-sm mt-2 opacity-90 text-center">
@@ -778,14 +1598,15 @@ export default function Home() {
           </AnimatePresence>
 
           <h2 className="text-3xl md:text-6xl font-black dark:text-white uppercase leading-[0.9] mb-8 tracking-tighter">
-            {t.home_page.form_title1} <span className="text-[#39B54A]">{t.home_page.form_title2}</span>
+            {t.home_page.form_title1}{" "}
+            <span className="text-[#39B54A]">{t.home_page.form_title2}</span>
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1">
               <label
                 htmlFor="consult-name"
-                className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-2"
+                className="text-xs font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-300 ml-2"
               >
                 {t.home_page.form_name_label}
               </label>
@@ -797,13 +1618,13 @@ export default function Home() {
                 autoComplete="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full p-4 md:p-5 rounded-2xl bg-white dark:bg-black dark:text-white border-2 border-transparent focus:border-[#39B54A] outline-none transition-all font-bold text-sm shadow-sm"
+                className="w-full p-4 md:p-5 rounded-2xl bg-white dark:bg-black dark:text-white border-2 border-transparent focus:border-[#39B54A] focus-visible:ring-2 focus-visible:ring-[#39B54A] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-black transition-all font-bold text-sm shadow-sm"
               />
             </div>
             <div className="space-y-1">
               <label
                 htmlFor="consult-phone"
-                className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-2"
+                className="text-xs font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-300 ml-2"
               >
                 {t.home_page.form_phone_label}
               </label>
@@ -816,7 +1637,7 @@ export default function Home() {
                 value={phone}
                 onChange={handlePhoneChange}
                 placeholder="+998 (__) ___-__-__"
-                className="w-full p-4 md:p-5 rounded-2xl bg-white dark:bg-black dark:text-white border-2 border-transparent focus:border-[#39B54A] outline-none transition-all font-bold text-sm shadow-sm"
+                className="w-full p-4 md:p-5 rounded-2xl bg-white dark:bg-black dark:text-white border-2 border-transparent focus:border-[#39B54A] focus-visible:ring-2 focus-visible:ring-[#39B54A] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-black transition-all font-bold text-sm shadow-sm"
               />
             </div>
             <button
@@ -853,14 +1674,14 @@ export default function Home() {
               <h3 className="text-xs md:text-sm font-black dark:text-white uppercase leading-none tracking-tight">
                 {t.home_page.map_branch}
               </h3>
-              <p className="text-[10px] md:text-[11px] text-zinc-500 font-bold uppercase mt-1 tracking-wider text-left">
+              <p className="text-xs md:text-sm text-zinc-700 dark:text-zinc-300 font-bold uppercase mt-1 tracking-wider text-left">
                 {t.home_page.map_address}
               </p>
               <a
                 href="https://www.google.com/maps/search/?api=1&query=Istiqbol+luck+xususiy+maktabi"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 mt-3 text-[9px] md:text-[10px] font-black text-[#39B54A] uppercase tracking-widest hover:text-black dark:hover:text-white transition-all"
+                className="inline-flex items-center gap-1.5 mt-3 text-xs md:text-sm font-black text-[#39B54A] uppercase tracking-widest hover:text-black dark:hover:text-white transition-all"
               >
                 <span>{t.home_page.map_find}</span>
                 <ArrowUpRight size={14} />
@@ -880,12 +1701,14 @@ export default function Home() {
               </h4>
               <h2 className="text-3xl md:text-6xl font-black dark:text-white uppercase tracking-tighter leading-none">
                 {t.home_page.faq_title1} <br className="hidden md:block" />
-                <span className="dark:text-white">{t.home_page.faq_title2}</span>
+                <span className="dark:text-white">
+                  {t.home_page.faq_title2}
+                </span>
               </h2>
             </div>
             <div className="flex items-stretch gap-4 md:gap-6 max-w-md">
               <div className="w-[2px] md:w-[3px] bg-[#39B54A] opacity-30 shrink-0"></div>
-              <p className="text-zinc-400 dark:text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] leading-relaxed py-1">
+              <p className="text-zinc-700 dark:text-zinc-300 text-xs md:text-sm font-bold uppercase tracking-[0.2em] leading-relaxed py-1">
                 {t.home_page.faq_desc}
               </p>
             </div>

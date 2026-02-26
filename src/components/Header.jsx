@@ -10,7 +10,15 @@ import { useLanguage } from "../context/LanguageContext"; // Context'ni chaqiram
 const FlagIcon = ({ code, className = "" }) => {
   if (code === "RU") {
     return (
-      <svg viewBox="0 0 24 16" className={className} aria-hidden="true">
+      <svg
+        viewBox="0 0 24 16"
+        width="24"
+        height="16"
+        preserveAspectRatio="xMidYMid meet"
+        className={className}
+        aria-hidden="true"
+        focusable="false"
+      >
         <rect width="24" height="16" fill="#FFFFFF" />
         <rect y="5.33" width="24" height="5.34" fill="#224C9D" />
         <rect y="10.67" width="24" height="5.33" fill="#D52B1E" />
@@ -20,7 +28,15 @@ const FlagIcon = ({ code, className = "" }) => {
 
   if (code === "EN") {
     return (
-      <svg viewBox="0 0 24 16" className={className} aria-hidden="true">
+      <svg
+        viewBox="0 0 24 16"
+        width="24"
+        height="16"
+        preserveAspectRatio="xMidYMid meet"
+        className={className}
+        aria-hidden="true"
+        focusable="false"
+      >
         <rect width="24" height="16" fill="#1F4DA1" />
         <path d="M0 0 L9 6 L7.2 6 L0 1.2 Z" fill="#FFFFFF" />
         <path d="M24 0 L15 6 L16.8 6 L24 1.2 Z" fill="#FFFFFF" />
@@ -39,7 +55,15 @@ const FlagIcon = ({ code, className = "" }) => {
   }
 
   return (
-    <svg viewBox="0 0 24 16" className={className} aria-hidden="true">
+    <svg
+      viewBox="0 0 24 16"
+      width="24"
+      height="16"
+      preserveAspectRatio="xMidYMid meet"
+      className={className}
+      aria-hidden="true"
+      focusable="false"
+    >
       <rect width="24" height="16" fill="#1EB4E8" />
       <rect y="5" width="24" height="0.8" fill="#D81E32" />
       <rect y="5.8" width="24" height="4.4" fill="#FFFFFF" />
@@ -155,7 +179,7 @@ export default function Header() {
             >
               <FlagIcon
                 code={currentLanguage.flagCode}
-                className="w-[18px] h-3.5 rounded-[2px] shadow-sm"
+                className="w-5 h-3.5 md:h-4 rounded-[2px] shadow-sm shrink-0 block"
               />
               <span className="text-[10px] md:text-[11px] font-black text-zinc-800 dark:text-zinc-200 uppercase tracking-widest">
                 {lang === "UZ_KR" ? "ЎЗ" : lang}
@@ -187,7 +211,7 @@ export default function Header() {
                     >
                       <FlagIcon
                         code={item.flagCode}
-                        className="w-[18px] h-3.5 rounded-[2px] shadow-sm"
+                        className="w-5 h-3.5 rounded-[2px] shadow-sm shrink-0 block"
                       />
                       {item.label}
                     </button>

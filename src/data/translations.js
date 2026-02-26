@@ -139,7 +139,7 @@ const commonAssets = {
   },
   socials: {
     telegram: "https://t.me/ISTIQBOL_LUCK_NTM",
-    instagram: "https://instagram.com/istiqbol_luck_ntm2020",
+    instagram: "https://instagram.com/istiqbolluckuz",
     youtube: "https://youtube.com/@ISTIQBOL_LUCK_NTM",
   },
 };
@@ -483,7 +483,8 @@ const uzTexts = {
     form_success_title: "Qabul qilindi!",
     form_success_desc: "Tez orada bog'lanamiz.",
     form_error_title: "Yuborilmadi!",
-    form_error_desc: "So'rovni yuborishda xatolik. Iltimos qayta urinib ko'ring.",
+    form_error_desc:
+      "So'rovni yuborishda xatolik. Iltimos qayta urinib ko'ring.",
     form_limit_title: "Limit tugadi!",
     form_limit_desc: "Bitta raqam ko'pi bilan 2 marta yubora oladi.",
     map_branch: "Asosiy Filial",
@@ -496,7 +497,8 @@ const uzTexts = {
     faqs: [
       {
         question: "Maktabga qabul qanday?",
-        answer: "Suhbat va aniq fanlardan test sinovi asosida.",
+        answer:
+          "Suhbat asosida qabul amalga oshiriladi. Ariza topshirish orqali suhbatga yoziling.",
       },
       {
         question: "Yotoqxona mavjudmi?",
@@ -505,7 +507,7 @@ const uzTexts = {
       },
       {
         question: "O'quv rejimi qanday?",
-        answer: "Darslar 08:30 dan 16:30 gacha davom etadi.",
+        answer: "Darslar 08:00 dan boshlanadi.",
       },
       {
         question: "Diplom beriladimi?",
@@ -1090,7 +1092,8 @@ const uzKrTexts = {
     faqs: [
       {
         question: "Мактабга қабул қандай?",
-        answer: "Суҳбат ва аниқ фанлардан тест синови асосида.",
+        answer:
+          "Суҳбат асосида қабул амалга оширилади. Ариза топшириш орқали суҳбатга ёзилинг.",
       },
       {
         question: "Ётоқхона мавжудми?",
@@ -1099,7 +1102,7 @@ const uzKrTexts = {
       },
       {
         question: "Ўқув режими қандай?",
-        answer: "Дарслар 08:30 дан 16:30 гача давом этади.",
+        answer: "Дарслар 08:00 дан бошланади.",
       },
       {
         question: "Диплом бериладими?",
@@ -1656,7 +1659,8 @@ const ruTexts = {
     form_success_title: "Принято!",
     form_success_desc: "Скоро мы с вами свяжемся.",
     form_error_title: "Не отправлено!",
-    form_error_desc: "Ошибка при отправке заявки. Пожалуйста, попробуйте снова.",
+    form_error_desc:
+      "Ошибка при отправке заявки. Пожалуйста, попробуйте снова.",
     form_limit_title: "Лимит исчерпан!",
     form_limit_desc: "Один номер можно отправить максимум 2 раза.",
     map_branch: "Главный филиал",
@@ -1669,13 +1673,14 @@ const ruTexts = {
     faqs: [
       {
         question: "Как проходит прием?",
-        answer: "На основе собеседования и тестов по точным наукам.",
+        answer:
+          "Прием осуществляется на основе собеседования. Подайте заявку, чтобы записаться на собеседование.",
       },
       {
         question: "Есть ли общежитие?",
         answer: "Да, для иногородних есть общежитие и 3-разовое питание.",
       },
-      { question: "Режим обучения?", answer: "Уроки длятся с 08:30 до 16:30." },
+      { question: "Режим обучения?", answer: "Занятия начинаются в 08:00." },
       {
         question: "Выдается ли диплом?",
         answer: "Да, выдается аттестат государственного образца.",
@@ -2257,7 +2262,8 @@ const enTexts = {
     faqs: [
       {
         question: "How is admission?",
-        answer: "Based on an interview and tests in exact sciences.",
+        answer:
+          "Admission is based on an interview. Submit an application to book an interview.",
       },
       {
         question: "Is there a dormitory?",
@@ -2266,7 +2272,7 @@ const enTexts = {
       },
       {
         question: "What is the study schedule?",
-        answer: "Classes continue from 08:30 to 16:30.",
+        answer: "Classes start at 08:00.",
       },
       {
         question: "Is a diploma issued?",
