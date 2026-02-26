@@ -21,11 +21,28 @@
   }
 }
 /* Global transition */
-* {
+html {
+  scroll-behavior: smooth;
+}
+
+body,
+a,
+button,
+input,
+select,
+textarea {
   transition:
-    background-color 0.3s ease,
-    border-color 0.3s ease,
-    color 0.3s ease;
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  touch-action: manipulation;
 }
 
 /* Base layer */
@@ -33,6 +50,38 @@
   body {
     @apply bg-white text-black dark:bg-black dark:text-white transition-colors duration-300;
   }
+}
+
+/* Keyboard accessibility */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid #39b54a;
+  outline-offset: 2px;
+}
+
+/* Skip link for keyboard users */
+.skip-link {
+  position: fixed;
+  top: -100%;
+  left: 1rem;
+  z-index: 2000;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.75rem;
+  background: #39b54a;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* Defer heavy section rendering outside viewport */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 1000px;
 }
 
 /* Text outline */
@@ -66,4 +115,20 @@
 
 .animate-scroll-reverse {
   animation: scroll-reverse 40s linear infinite;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

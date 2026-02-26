@@ -15,6 +15,7 @@ import {
   Instagram,
   Loader2,
   CheckCircle,
+  AlertCircle,
   ChevronDown,
   MapPin,
   ArrowRight,
@@ -158,6 +159,8 @@ const VideoFeedbackCard = ({ feedback, isPlaying, onPlay }) => {
             <img
               src={feedback.thumbnail}
               alt={feedback.name}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover opacity-50 grayscale-0 transition-all duration-700"
             />
             <a
@@ -170,7 +173,9 @@ const VideoFeedbackCard = ({ feedback, isPlaying, onPlay }) => {
             >
               <Instagram size={16} />
             </a>
-            <div
+            <button
+              type="button"
+              aria-label={`${feedback.name} videosini ijro etish`}
               className="absolute inset-0 flex items-center justify-center cursor-pointer"
               onClick={onPlay}
             >
@@ -184,7 +189,7 @@ const VideoFeedbackCard = ({ feedback, isPlaying, onPlay }) => {
                   size={24}
                 />
               </motion.div>
-            </div>
+            </button>
             <div className="absolute bottom-8 left-8 text-white text-left z-10">
               <p className="font-black text-xl uppercase tracking-tighter leading-none mb-1">
                 {feedback.name}
@@ -291,13 +296,39 @@ const FAQItem = ({ faq }) => {
 // --- ASOSIY HOME KOMPONENTI ---
 
 export default function Home() {
-  const { t } = useLanguage(); 
+  const { t, lang } = useLanguage();
   const consultRef = useRef(null);
+  const SUBMISSION_LIMIT_PER_PHONE = 2;
+  const FORM_SUBMIT_STORAGE_KEY = "homeConsultSubmitCounts";
 
   const [status, setStatus] = useState("idle");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("+998");
   const [playingVideoIndex, setPlayingVideoIndex] = useState(null);
+
+  const normalizePhone = (value) => value.replace(/\D/g, "");
+
+  const getSubmitCounts = () => {
+    try {
+      const raw = localStorage.getItem(FORM_SUBMIT_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {};
+    }
+  };
+
+  const getPhoneSubmitCount = (normalizedPhone) => {
+    const counts = getSubmitCounts();
+    const count = counts[normalizedPhone];
+    return Number.isInteger(count) && count > 0 ? count : 0;
+  };
+
+  const incrementPhoneSubmitCount = (normalizedPhone) => {
+    const counts = getSubmitCounts();
+    counts[normalizedPhone] = getPhoneSubmitCount(normalizedPhone) + 1;
+    localStorage.setItem(FORM_SUBMIT_STORAGE_KEY, JSON.stringify(counts));
+  };
 
   const handlePhoneChange = (e) => {
     let input = e.target.value.replace(/\D/g, "");
@@ -313,44 +344,91 @@ export default function Home() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (phone.length < 19) {
+    const cleanName = name.trim();
+    const normalizedPhone = normalizePhone(phone);
+
+    if (!cleanName) {
+      alert("Iltimos, ismingizni kiriting.");
+      return;
+    }
+
+    if (normalizedPhone.length < 12) {
       alert("Iltimos, telefon raqamingizni to'liq kiriting.");
       return;
     }
+
+    if (getPhoneSubmitCount(normalizedPhone) >= SUBMISSION_LIMIT_PER_PHONE) {
+      setStatus("limit");
+      setTimeout(() => setStatus("idle"), 4000);
+      return;
+    }
+
     setStatus("loading");
-    const botToken = "7893849239:AAEalenahp_ar51YDUBYu5Fr6SazLgGu7dI";
-    const chatIds = ["8389397224", "894403107"]; // Multiple chat IDs
-    const message = `🎯 <b>Yangi ariza!</b>\n\n👤 <b>Ism:</b> ${name}\n📞 <b>Telefon:</b> ${phone}`;
+    const botToken =
+      import.meta.env.VITE_TELEGRAM_BOT_TOKEN ||
+      "7893849239:AAEalenahp_ar51YDUBYu5Fr6SazLgGu7dI";
+    const chatIds = (
+      import.meta.env.VITE_TELEGRAM_CHAT_IDS || "8389397224,894403107"
+    )
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+
+    const submittedAt = new Date().toLocaleString("uz-UZ", {
+      timeZone: "Asia/Tashkent",
+    });
+
+    const message =
+      `🎯 <b>Yangi ariza!</b>\n\n` +
+      `👤 <b>Ism:</b> ${cleanName}\n` +
+      `📞 <b>Telefon:</b> ${phone}\n` +
+      `🌐 <b>Sahifa:</b> Home / Qabul\n` +
+      `🈯️ <b>Til:</b> ${lang}\n` +
+      `🕒 <b>Vaqt:</b> ${submittedAt}`;
+
     try {
-      // Send message to all chat IDs
-      const promises = chatIds.map(chatId =>
-        fetch(
-          `https://api.telegram.org/bot${botToken}/sendMessage`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              chat_id: chatId,
-              text: message,
-              parse_mode: "HTML",
-            }),
-          },
-        )
+      const results = await Promise.allSettled(
+        chatIds.map(async (chatId) => {
+          const response = await fetch(
+            `https://api.telegram.org/bot${botToken}/sendMessage`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                chat_id: chatId,
+                text: message,
+                parse_mode: "HTML",
+              }),
+            },
+          );
+          const payload = await response.json().catch(() => null);
+          return {
+            ok: response.ok && payload?.ok !== false,
+            chatId,
+            description: payload?.description || null,
+          };
+        }),
       );
-      
-      const responses = await Promise.all(promises);
-      
-      // Check if at least one message was sent successfully
-      if (responses.some(response => response.ok)) {
+
+      const delivered = results.some(
+        (res) => res.status === "fulfilled" && res.value.ok,
+      );
+
+      if (delivered) {
+        incrementPhoneSubmitCount(normalizedPhone);
         setStatus("success");
         setName("");
         setPhone("+998");
         setTimeout(() => setStatus("idle"), 4000);
       } else {
-        setStatus("idle");
+        console.error("Telegram send failed", results);
+        setStatus("error");
+        setTimeout(() => setStatus("idle"), 4000);
       }
     } catch (error) {
-      setStatus("idle");
+      console.error("Telegram send exception", error);
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 4000);
     }
   };
 
@@ -362,8 +440,11 @@ export default function Home() {
       <section className="relative h-screen w-full flex flex-col justify-center items-center overflow-hidden bg-black">
         <div className="absolute inset-0 z-0">
           <img
-            src={t.home_page.hero_bg} 
+            src={t.home_page.hero_bg}
             alt="School"
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent"></div>
@@ -441,7 +522,7 @@ export default function Home() {
       </section>
 
       {/* 2. ADVANTAGES SECTION */}
-      <section className="py-16 md:py-32 bg-white dark:bg-[#050505] transition-colors">
+      <section className="cv-auto py-16 md:py-32 bg-white dark:bg-[#050505] transition-colors">
         <div className="max-w-7xl mx-auto px-4 md:px-6 text-left">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 md:mb-20 gap-6">
             <div>
@@ -482,7 +563,7 @@ export default function Home() {
       </section>
 
       {/* 3. STATS SECTION */}
-      <section className="py-16 md:py-32 bg-white dark:bg-[#050505] border-y border-zinc-100 dark:border-zinc-900 transition-colors">
+      <section className="cv-auto py-16 md:py-32 bg-white dark:bg-[#050505] border-y border-zinc-100 dark:border-zinc-900 transition-colors">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <div className="mb-12 md:mb-24">
             <h4 className="text-[#39B54A] font-bold tracking-[0.3em] uppercase text-[10px] md:text-xs mb-3 italic">
@@ -518,7 +599,7 @@ export default function Home() {
       </section>
 
       {/* 4. MAKTAB HAYOTI SECTION */}
-      <section className="py-16 md:py-32 bg-white dark:bg-[#050505] overflow-hidden transition-colors">
+      <section className="cv-auto py-16 md:py-32 bg-white dark:bg-[#050505] overflow-hidden transition-colors">
         <div className="w-full text-left">
           <div className="max-w-7xl mx-auto px-6 mb-12 md:mb-20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-12">
@@ -551,7 +632,7 @@ export default function Home() {
       </section>
 
       {/* 5. FEEDBACK SECTION */}
-      <section className="py-16 md:py-32 bg-white dark:bg-[#050505] overflow-hidden transition-colors">
+      <section className="cv-auto py-16 md:py-32 bg-white dark:bg-[#050505] overflow-hidden transition-colors">
         <div className="w-full text-left">
           <div className="max-w-7xl mx-auto px-6 mb-12 md:mb-20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-12">
@@ -608,7 +689,7 @@ export default function Home() {
       </section>
 
       {/* 6. UNIVERSITIES SECTION */}
-      <section className="py-16 md:py-32 bg-white dark:bg-[#050505] overflow-hidden transition-colors border-y border-zinc-50 dark:border-zinc-900">
+      <section className="cv-auto py-16 md:py-32 bg-white dark:bg-[#050505] overflow-hidden transition-colors border-y border-zinc-50 dark:border-zinc-900">
         <div className="w-full text-left">
           <div className="max-w-7xl mx-auto px-6 mb-12 md:mb-20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-12">
@@ -648,23 +729,49 @@ export default function Home() {
 
       {/* 7. KONSULTATSIYA SECTION */}
       <section
+        id="consult-section"
         ref={consultRef}
-        className="py-16 md:py-32 max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-8 md:gap-12 items-start text-left"
+        className="cv-auto py-16 md:py-32 max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-8 md:gap-12 items-start text-left"
       >
         <div className="bg-[#e2dfdf] dark:bg-[#0c0c0c] p-8 md:p-12 rounded-[2.5rem] relative overflow-hidden border border-transparent dark:border-zinc-800 shadow-sm h-full">
           <AnimatePresence>
-            {status === "success" && (
+            {(status === "success" ||
+              status === "error" ||
+              status === "limit") && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="absolute inset-0 z-20 bg-[#39B54A] flex flex-col items-center justify-center text-white text-center p-6"
+                className={`absolute inset-0 z-20 flex flex-col items-center justify-center text-white text-center p-6 ${
+                  status === "success"
+                    ? "bg-[#39B54A]"
+                    : status === "limit"
+                      ? "bg-amber-600"
+                      : "bg-red-600"
+                }`}
+                role="alert"
+                aria-live="assertive"
               >
-                <CheckCircle size={60} className="mb-4" />
+                {status === "success" ? (
+                  <CheckCircle size={60} className="mb-4" />
+                ) : (
+                  <AlertCircle size={60} className="mb-4" />
+                )}
                 <h3 className="text-2xl font-black uppercase italic tracking-tight">
-                  {t.home_page.form_success_title}
+                  {status === "success"
+                    ? t.home_page.form_success_title
+                    : status === "limit"
+                      ? t.home_page.form_limit_title ||
+                        "So'rov limiti tugadi"
+                      : t.home_page.form_error_title || "Xatolik yuz berdi"}
                 </h3>
                 <p className="text-sm mt-2 opacity-90 text-center">
-                  {t.home_page.form_success_desc}
+                  {status === "success"
+                    ? t.home_page.form_success_desc
+                    : status === "limit"
+                      ? t.home_page.form_limit_desc ||
+                        "Bitta raqam ko'pi bilan 2 marta yubora oladi."
+                      : t.home_page.form_error_desc ||
+                        "So'rov yuborilmadi. Iltimos qayta urinib ko'ring."}
                 </p>
               </motion.div>
             )}
@@ -676,25 +783,36 @@ export default function Home() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-2">
+              <label
+                htmlFor="consult-name"
+                className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-2"
+              >
                 {t.home_page.form_name_label}
               </label>
               <input
+                id="consult-name"
                 required
                 type="text"
                 placeholder={t.home_page.form_name_placeholder}
+                autoComplete="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full p-4 md:p-5 rounded-2xl bg-white dark:bg-black dark:text-white border-2 border-transparent focus:border-[#39B54A] outline-none transition-all font-bold text-sm shadow-sm"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-2">
+              <label
+                htmlFor="consult-phone"
+                className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-2"
+              >
                 {t.home_page.form_phone_label}
               </label>
               <input
+                id="consult-phone"
                 required
-                type="text"
+                type="tel"
+                autoComplete="tel"
+                inputMode="numeric"
                 value={phone}
                 onChange={handlePhoneChange}
                 placeholder="+998 (__) ___-__-__"
@@ -704,6 +822,7 @@ export default function Home() {
             <button
               type="submit"
               disabled={status === "loading"}
+              aria-busy={status === "loading"}
               className="w-full py-4 md:py-5 bg-black dark:bg-[#39B54A] text-white font-black uppercase rounded-2xl text-xs md:text-sm tracking-[0.2em] transition-all flex justify-center items-center gap-2 mt-4"
             >
               {status === "loading" ? (
@@ -752,7 +871,7 @@ export default function Home() {
       </section>
 
       {/* 8. FAQ SECTION */}
-      <section className="py-16 md:py-32 bg-white dark:bg-[#050505] transition-colors text-left">
+      <section className="cv-auto py-16 md:py-32 bg-white dark:bg-[#050505] transition-colors text-left">
         <div className="max-w-7xl mx-auto px-6 text-left">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-12 mb-12 md:mb-20">
             <div>
