@@ -32,8 +32,24 @@ import { useLanguage } from "../context/LanguageContext";
 const wrap = (min, max, v) =>
   ((((v - min) % (max - min)) + (max - min)) % (max - min)) + min;
 
-const ADMISSION_DEADLINE_ISO =
-  import.meta.env.VITE_ADMISSION_DEADLINE || "2026-08-31T23:59:59+05:00";
+const ADMISSION_WINDOW_DAYS = Number(
+  import.meta.env.VITE_ADMISSION_WINDOW_DAYS || 30,
+);
+
+const resolveAdmissionDeadlineIso = () => {
+  if (import.meta.env.VITE_ADMISSION_DEADLINE) {
+    return import.meta.env.VITE_ADMISSION_DEADLINE;
+  }
+
+  const safeWindowDays =
+    Number.isFinite(ADMISSION_WINDOW_DAYS) && ADMISSION_WINDOW_DAYS > 0
+      ? ADMISSION_WINDOW_DAYS
+      : 30;
+
+  return new Date(Date.now() + safeWindowDays * 24 * 60 * 60 * 1000).toISOString();
+};
+
+const ADMISSION_DEADLINE_ISO = resolveAdmissionDeadlineIso();
 
 const MARKETING_CONTENT = {
   UZ: {
