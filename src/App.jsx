@@ -7,6 +7,7 @@ import Loading from "./components/Loading";
 import BottomNav from "./components/BottomNav";
 import FloatingActions from "./components/FloatingActions";
 import ExitIntentPopup from "./components/ExitIntentPopup";
+import GlobalConsultSticky from "./components/GlobalConsultSticky";
 import { LanguageProvider } from "./context/LanguageContext";
 
 // Lazy loading pages for performance
@@ -46,6 +47,7 @@ function App() {
         </main>
 
         <FloatingActions />
+        <GlobalConsultSticky />
         <ExitIntentPopup />
         <div className="pb-20 lg:pb-0">
           <Footer />

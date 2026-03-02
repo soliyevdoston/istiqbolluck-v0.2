@@ -1079,14 +1079,41 @@ export default function Home() {
   const isFeedbackSectionInView = useInView(feedbackSectionRef, {
     amount: 0.2,
   });
-  const isConsultInView = useInView(consultRef, { amount: 0.25 });
-  const contactPhoneRaw = import.meta.env.VITE_CONTACT_PHONE || "";
+  const contactPhoneRaw = import.meta.env.VITE_CONTACT_PHONE || t?.phone || "";
   const contactPhoneDigits = contactPhoneRaw.replace(/[^\d+]/g, "");
   const contactPhoneLink = contactPhoneDigits
     ? `tel:${contactPhoneDigits}`
     : null;
 
   const normalizePhone = (value) => value.replace(/\D/g, "");
+  const getAttribution = () => {
+    if (typeof window === "undefined") {
+      return {
+        source: "unknown",
+        medium: "unknown",
+        campaign: "unknown",
+        landing: "unknown",
+        referrer: "direct",
+      };
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const source = params.get("utm_source") || params.get("source") || "direct";
+    const medium = params.get("utm_medium") || "none";
+    const campaign = params.get("utm_campaign") || "none";
+    const landing = `${window.location.pathname}${window.location.search}`;
+
+    let referrer = "direct";
+    if (document.referrer) {
+      try {
+        referrer = new URL(document.referrer).hostname || document.referrer;
+      } catch {
+        referrer = document.referrer;
+      }
+    }
+
+    return { source, medium, campaign, landing, referrer };
+  };
 
   const trackEvent = (eventName, params = {}) => {
     if (typeof window === "undefined") return;
@@ -1267,6 +1294,7 @@ export default function Home() {
     e.preventDefault();
     const cleanName = name.trim();
     const normalizedPhone = normalizePhone(phone);
+    const attribution = getAttribution();
     const quizSummary =
       quizCompleted && quizResult
         ? `${quizResult.trackLabel} | ${quizResult.ageLabel} | ${quizResult.genderLabel}`
@@ -1278,6 +1306,8 @@ export default function Home() {
       hasAge: Boolean(childAge),
       hasContactTime: Boolean(contactTime),
       hasInterest: Boolean(childInterest.trim()),
+      source: attribution.source,
+      campaign: attribution.campaign,
     });
 
     if (!cleanName) {
@@ -1320,6 +1350,11 @@ export default function Home() {
       `⏰ <b>Qulay vaqt:</b> ${contactTime || "-"}\n` +
       `⭐️ <b>Qiziqish:</b> ${childInterest.trim() || "-"}\n` +
       `🌐 <b>Sahifa:</b> Home / Qabul\n` +
+      `📣 <b>Source:</b> ${attribution.source}\n` +
+      `📈 <b>Medium:</b> ${attribution.medium}\n` +
+      `🎯 <b>Campaign:</b> ${attribution.campaign}\n` +
+      `🧭 <b>Landing:</b> ${attribution.landing}\n` +
+      `↩️ <b>Referrer:</b> ${attribution.referrer}\n` +
       `🈯️ <b>Til:</b> ${lang}\n` +
       `🧠 <b>Quiz:</b> ${quizSummary}\n` +
       `🕒 <b>Vaqt:</b> ${submittedAt}`;
@@ -1362,6 +1397,8 @@ export default function Home() {
           quizTrack: quizResult?.track || null,
           childAge: childAge || null,
           contactTime: contactTime || null,
+          source: attribution.source,
+          campaign: attribution.campaign,
         });
         setName("");
         setPhone("+998");
@@ -1376,6 +1413,7 @@ export default function Home() {
           lang,
           phone: normalizedPhone,
           reason: "telegram_failed",
+          source: attribution.source,
         });
         setTimeout(() => setStatus("idle"), 4000);
       }
@@ -1386,6 +1424,7 @@ export default function Home() {
         lang,
         phone: normalizedPhone,
         reason: "exception",
+        source: attribution.source,
       });
       setTimeout(() => setStatus("idle"), 4000);
     }
@@ -2136,36 +2175,6 @@ export default function Home() {
         </div>
       </section>
 
-      <AnimatePresence>
-        {!isConsultInView && (
-          <motion.div
-            initial={{ y: 80, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 80, opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-[120] w-[calc(100%-1.5rem)] sm:w-auto"
-          >
-            <button
-              type="button"
-              onClick={() => scrollToConsult("sticky_cta")}
-              className="w-full sm:w-auto flex items-center justify-between gap-4 rounded-2xl bg-black text-white px-4 py-3 sm:px-5 sm:py-3 shadow-2xl border border-zinc-700/60"
-            >
-              <div className="text-left">
-                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#39B54A]">
-                  {conversion.sticky.title}
-                </p>
-                <p className="text-xs sm:text-sm font-semibold">
-                  {conversion.sticky.desc}
-                </p>
-              </div>
-              <span className="shrink-0 inline-flex items-center gap-1 rounded-xl bg-[#39B54A] px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em]">
-                {conversion.sticky.cta}
-                <ArrowRight size={14} />
-              </span>
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
